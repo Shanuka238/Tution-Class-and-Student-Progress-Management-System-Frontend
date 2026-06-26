@@ -3,13 +3,8 @@ name: Frontend CI
 on:
   push:
     branches: [main, develop]
-    paths:
-      - 'frontend/**'
-      - 'frontend/.github/workflows/frontend-ci.yml'
   pull_request:
     branches: [main, develop]
-    paths:
-      - 'frontend/**'
 
 jobs:
   lint-and-build:
@@ -21,45 +16,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
       
       - name: Install dependencies
-        run: cd frontend && npm install
+        run: npm install
       
       - name: Run linter
-        run: cd frontend && npm run lint || true
+        run: npm run lint || true
       
       - name: Build application
-        run: cd frontend && npm run build
+        run: npm run build
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: frontend/dist
+          path: dist
           retention-days: 5
-
-  # deploy-to-vercel:
-  #   needs: lint-and-build
-  #   runs-on: ubuntu-latest
-  #   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-  #   
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '18'
-  #     
-  #     - name: Install Vercel CLI
-  #       run: npm install -g vercel
-  #     
-  #     - name: Deploy to Vercel
-  #       env:
-  #         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-  #         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  #         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  #       run: |
-  #         cd frontend
-  #         vercel deploy --prod --token=$VERCEL_TOKEN
