@@ -1,0 +1,63 @@
+import { Typography } from "antd";
+import {
+  TeamOutlined,
+  BookOutlined,
+  CheckSquareOutlined,
+  DollarOutlined,
+} from "@ant-design/icons";
+import { useAuth } from "../../context/AuthContext";
+import StatCard from "../Common/StatCard";
+
+const { Text, Title } = Typography;
+
+const stats = [
+  { title: "Total Users", value: "—", icon: <TeamOutlined />, color: "#4F46E5" },
+  {
+    title: "Active Classes",
+    value: "—",
+    icon: <BookOutlined />,
+    color: "#10B981",
+  },
+  {
+    title: "Today's Attendance",
+    value: "—",
+    icon: <CheckSquareOutlined />,
+    color: "#F59E0B",
+  },
+  { title: "Fee Collected", value: "—", icon: <DollarOutlined />, color: "#3B82F6" },
+];
+
+function DashboardOverview() {
+  const { user } = useAuth();
+
+  return (
+    <div className="dashboard-content">
+      {/* Welcome section */}
+      <div className="welcome-section">
+        <Title level={2} style={{ margin: 0 }}>
+          Welcome back, {user?.first_name}! 👋
+        </Title>
+        <Text type="secondary">
+          Here's what's happening at your tuition center today.
+        </Text>
+      </div>
+
+      {/* Stats row */}
+      <div className="stats-row">
+        {stats.map((stat, i) => (
+          <StatCard key={i} stat={stat} />
+        ))}
+      </div>
+
+      {/* Placeholder */}
+      <div className="placeholder-card">
+        <Text type="secondary" style={{ fontSize: 15 }}>
+          🚧 Role-specific analytics, charts, and management tables will appear
+          here as each module is built.
+        </Text>
+      </div>
+    </div>
+  );
+}
+
+export default DashboardOverview;
