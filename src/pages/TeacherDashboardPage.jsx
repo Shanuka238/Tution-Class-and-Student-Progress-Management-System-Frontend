@@ -1,37 +1,35 @@
 import { useState } from "react";
 import DashboardPage from "./DashboardPage";
-import ParentDashboardOverview from "../components/ParentDashboard/DashboardOverview";
+import TeacherDashboardOverview from "../components/TeacherDashboard/DashboardOverview";
 import ComingSoon from "../components/Common/ComingSoon";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
-function ParentDashboardPage() {
+function TeacherDashboardPage() {
   const [activeKey, setActiveKey] = useState("overview");
 
   const renderContent = () => {
     switch (activeKey) {
       case "overview":
-        return <ParentDashboardOverview />;
+        return <TeacherDashboardOverview />;
       
-      case "progress":
-        return <ComingSoon label="Child Progress" />;
+      case "classes":
+        return <ComingSoon label="Class & Timetable" />;
       case "attendance":
-        return <ComingSoon label="Attendance" />;
+        return <ComingSoon label="Attendance Management" />;
       case "exams":
         return <ComingSoon label="Exams & Results" />;
       case "analytics":
         return <ComingSoon label="Performance Analytics" />;
-      case "payments":
-        return <ComingSoon label="Payment Management" />;
         
       default:
-        return <ParentDashboardOverview />;
+        return <TeacherDashboardOverview />;
     }
   };
 
   return (
     <DashboardPage
-      navItems={NAV_CONFIG.parent}
+      navItems={NAV_CONFIG.teacher}
       activeKey={activeKey}
       onNavChange={(key) => setActiveKey(key)}
     >
@@ -40,4 +38,4 @@ function ParentDashboardPage() {
   );
 }
 
-export default ParentDashboardPage;
+export default TeacherDashboardPage;
