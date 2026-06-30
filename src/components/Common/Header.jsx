@@ -9,21 +9,12 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { formatRoleDisplay } from "../../utils/roleHelper";
 
-const { Header } = Layout;
+const { Header: AntHeader } = Layout;
 const { Text, Title } = Typography;
 
-const navItems = [
-  { key: "dashboard", label: "Dashboard" },
-  { key: "users", label: "User Management" },
-  { key: "classes", label: "Classes" },
-  { key: "attendance", label: "Attendance" },
-  { key: "exams", label: "Exams & Results" },
-  { key: "payments", label: "Payments" },
-  { key: "chatbot", label: "AI Assistant" },
-];
-
-function AdminHeader({ collapsed, onCollapseToggle, activeNav }) {
+function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { token: themeToken } = theme.useToken();
@@ -48,8 +39,10 @@ function AdminHeader({ collapsed, onCollapseToggle, activeNav }) {
     ],
   };
 
+  const currentLabel = navItems.find((n) => n.key === activeNav)?.label || "Dashboard";
+
   return (
-    <Header
+    <AntHeader
       style={{
         background: themeToken.colorBgContainer,
         padding: "0 24px",
@@ -68,7 +61,7 @@ function AdminHeader({ collapsed, onCollapseToggle, activeNav }) {
           style={{ fontSize: 16, width: 40, height: 40 }}
         />
         <Title level={4} style={{ margin: 0 }}>
-          {navItems.find((n) => n.key === activeNav)?.label || "Admin Panel"}
+          {currentLabel}
         </Title>
       </div>
 
@@ -88,14 +81,14 @@ function AdminHeader({ collapsed, onCollapseToggle, activeNav }) {
                 {user?.first_name} {user?.last_name}
               </Text>
               <Text type="secondary" style={{ fontSize: 11 }}>
-                Administrator
+                {formatRoleDisplay(user?.role)}
               </Text>
             </div>
           </div>
         </Dropdown>
       </div>
-    </Header>
+    </AntHeader>
   );
 }
 
-export default AdminHeader;
+export default Header;

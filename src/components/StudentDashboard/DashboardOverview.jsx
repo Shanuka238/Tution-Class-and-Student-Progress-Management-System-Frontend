@@ -19,7 +19,7 @@ const stats = [
   { title: "Exams This Month", value: "—", icon: <FileTextOutlined />, color: "#8B5CF6" },
 ];
 
-function AdminDashboardOverview() {
+function StudentDashboardOverview() {
   const { user } = useAuth();
 
   return (
@@ -49,4 +49,4 @@ function AdminDashboardOverview() {
   );
 }
 
-export default AdminDashboardOverview;
+export default StudentDashboardOverview;

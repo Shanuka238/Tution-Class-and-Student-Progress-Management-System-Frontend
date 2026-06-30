@@ -1,36 +1,42 @@
-import { useState } from "react";
-import { Layout } from "antd";
-import AdminSidebar from "../components/AdminDashboard/AdminSidebar";
-import AdminHeader from "../components/AdminDashboard/AdminHeader";
-import DashboardContent from "../components/AdminDashboard/DashboardContent";
-import "../styles/AdminDashboard.css";
-
-const { Content } = Layout;
+import React, { useState } from "react";
+import DashboardPage from "./DashboardPage";
+import AdminDashboardOverview from "../components/AdminDashboard/DashboardOverview";
+import UserTable from "../components/UserManagement/UserTable"; 
+import ComingSoon from "../components/Common/ComingSoon";
+import { NAV_CONFIG } from "../enums/navConfig";
+import "../styles/Dashboard.css";
 
 function AdminDashboardPage() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [activeNav, setActiveNav] = useState("dashboard");
+  const [activeKey, setActiveKey] = useState("overview");
+
+  const renderContent = () => {
+    switch (activeKey) {
+      case "overview":
+        return <AdminDashboardOverview />;
+      
+      case "users":
+        return <UserTable />;
+        
+      case "classes":
+      case "attendance":
+      case "exams":
+      case "analytics":
+      case "payments":
+        return <ComingSoon label={activeKey.toUpperCase()} />;
+        
+      default:
+        return <AdminDashboardOverview />;
+    }
+  };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <AdminSidebar
-        collapsed={collapsed}
-        activeNav={activeNav}
-        onNavChange={setActiveNav}
-      />
-
-      <Layout>
-        <AdminHeader
-          collapsed={collapsed}
-          onCollapseToggle={() => setCollapsed(!collapsed)}
-          activeNav={activeNav}
-        />
-
-        <Content style={{ margin: 24 }}>
-          <DashboardContent activeNav={activeNav} />
-        </Content>
-      </Layout>
-    </Layout>
+    <DashboardPage
+      navItems={NAV_CONFIG.admin}
+      activeKey={activeKey}
+      onNavChange={(key) => setActiveKey(key)}
+    >
+      {renderContent()}
+    </DashboardPage>
   );
 }
 
