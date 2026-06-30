@@ -1,30 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { Layout, Menu, Button, theme } from "antd";
-import {
-  DashboardOutlined,
-  TeamOutlined,
-  BookOutlined,
-  CheckSquareOutlined,
-  FileTextOutlined,
-  DollarOutlined,
-  RobotOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
+import { LogoutOutlined } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
 
 const { Sider } = Layout;
 
-const navItems = [
-  { key: "dashboard", icon: <DashboardOutlined />, label: "Dashboard" },
-  { key: "users", icon: <TeamOutlined />, label: "User Management" },
-  { key: "classes", icon: <BookOutlined />, label: "Classes" },
-  { key: "attendance", icon: <CheckSquareOutlined />, label: "Attendance" },
-  { key: "exams", icon: <FileTextOutlined />, label: "Exams & Results" },
-  { key: "payments", icon: <DollarOutlined />, label: "Payments" },
-  { key: "chatbot", icon: <RobotOutlined />, label: "AI Assistant" },
-];
-
-function AdminSidebar({ collapsed, activeNav, onNavChange }) {
+function Sidebar({ collapsed, activeNav, onNavChange, navItems }) {
   const { logout } = useAuth();
   const navigate = useNavigate();
   const { token: themeToken } = theme.useToken();
@@ -83,4 +64,4 @@ function AdminSidebar({ collapsed, activeNav, onNavChange }) {
   );
 }
 
-export default AdminSidebar;
+export default Sidebar;
