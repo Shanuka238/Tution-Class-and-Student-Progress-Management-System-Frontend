@@ -31,7 +31,6 @@ export const NAV_CONFIG = {
     { key: "attendance", icon: <CheckSquareOutlined />,   label: "Attendance" },
     { key: "exams",      icon: <FileTextOutlined />,      label: "Exams & Results" },
     { key: "analytics",  icon: <BarChartOutlined />,      label: "Performance Analytics" },
-    { key: "chatbot",    icon: <RobotOutlined />,         label: "AI Assistant" },
   ],
 
   student: [
@@ -41,7 +40,6 @@ export const NAV_CONFIG = {
     { key: "exams",      icon: <TrophyOutlined />,        label: "View Exams & Results" },
     { key: "analytics",  icon: <RiseOutlined />,          label: "My Performance" },
     { key: "payments",   icon: <CreditCardOutlined />,    label: "Payments" },
-    { key: "chatbot",    icon: <RobotOutlined />,         label: "AI Assistant" },
   ],
 
   parent: [
@@ -51,7 +49,6 @@ export const NAV_CONFIG = {
     { key: "exams",      icon: <TrophyOutlined />,        label: "Exams & Results" },
     { key: "analytics",  icon: <BarChartOutlined />,      label: "Performance Analytics" },
     { key: "payments",   icon: <CreditCardOutlined />,    label: "Payment Management" },
-    { key: "chatbot",    icon: <RobotOutlined />,         label: "AI Assistant" },
   ],
 };
 

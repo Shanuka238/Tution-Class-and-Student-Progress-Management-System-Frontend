@@ -18,11 +18,15 @@ function AdminDashboardPage() {
         return <UserTable />;
         
       case "classes":
+        return <ComingSoon label="Class & Timetable" />;
       case "attendance":
+        return <ComingSoon label="Attendance" />;
       case "exams":
+        return <ComingSoon label="Exams & Results" />;
       case "analytics":
+        return <ComingSoon label="Performance Analytics" />;
       case "payments":
-        return <ComingSoon label={activeKey.toUpperCase()} />;
+        return <ComingSoon label="Payment Management" />;
         
       default:
         return <AdminDashboardOverview />;

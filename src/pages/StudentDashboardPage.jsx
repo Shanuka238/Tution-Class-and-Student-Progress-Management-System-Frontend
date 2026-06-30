@@ -1,14 +1,44 @@
+import { useState } from "react";
 import DashboardPage from "./DashboardPage";
 import StudentDashboardOverview from "../components/StudentDashboard/DashboardOverview";
+import ComingSoon from "../components/Common/ComingSoon";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
 function StudentDashboardPage() {
+  const [activeKey, setActiveKey] = useState("overview");
+
+  const renderContent = () => {
+    switch (activeKey) {
+      case "overview":
+        return <StudentDashboardOverview />;
+      
+      case "classes":
+        return <ComingSoon label="View Timetable" />;
+      case "attendance":
+        return <ComingSoon label="View Attendance" />;
+      case "exams":
+        return <ComingSoon label="View Exams & Results" />;
+      case "analytics":
+        return <ComingSoon label="My Performance" />;
+      case "payments":
+        return <ComingSoon label="Payments" />;
+      case "chatbot":
+        return <ComingSoon label="AI Assistant" />;
+        
+      default:
+        return <StudentDashboardOverview />;
+    }
+  };
+
   return (
     <DashboardPage
       navItems={NAV_CONFIG.student}
-      overviewComponent={StudentDashboardOverview}
-    />
+      activeKey={activeKey}
+      onNavChange={(key) => setActiveKey(key)}
+    >
+      {renderContent()}
+    </DashboardPage>
   );
 }
 

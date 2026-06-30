@@ -1,0 +1,136 @@
+/* Profile Modal */
+.profile-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.profile-modal .ant-modal-body {
+  padding: 0 !important;
+}
+
+.profile-modal .ant-modal-header {
+  display: none;
+}
+
+.profile-modal .ant-modal-close {
+  top: 12px;
+  right: 12px;
+}
+
+/* Loading */
+.profile-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+}
+
+/* Content Wrapper */
+.profile-content {
+  padding: 32px 28px;
+}
+
+/* Top Section */
+.profile-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-top .ant-avatar {
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+}
+
+.profile-top .ant-tag {
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 2px 10px;
+  border: none;
+}
+
+/* Details List */
+.profile-details {
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.profile-detail-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-detail-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--color-primary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+html[data-theme="dark"] .profile-detail-icon {
+  background: rgba(79, 70, 229, 0.15);
+  color: #818CF8;
+}
+
+.profile-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.profile-label {
+  font-size: 12px !important;
+  line-height: 1.2;
+}
+
+.profile-value {
+  font-size: 13px !important;
+  line-height: 1.4;
+  word-break: break-all;
+}
+
+/* Footer Actions */
+.profile-footer {
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-footer .ant-btn {
+  border-radius: 8px;
+  height: 38px;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.profile-footer .ant-btn-primary {
+  background: #4F46E5;
+  border: none;
+}
+
+.profile-footer .ant-btn-primary:hover {
+  background: #4338CA;
+}
+
+.profile-footer .ant-btn:not(.ant-btn-primary) {
+  border-color: var(--color-border);
+}
+
+.profile-footer .ant-btn:not(.ant-btn-primary):hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}

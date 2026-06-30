@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Layout } from "antd";
+import { Layout, theme } from "antd";
 import Sidebar from "../components/Common/Sidebar";
 import Header from "../components/Common/Header";
 import ChatbotFAB from "../components/Common/ChatbotFAB";
@@ -8,9 +8,13 @@ const { Content } = Layout;
 
 function DashboardPage({ navItems, activeKey, onNavChange, children }) {
   const [collapsed, setCollapsed] = useState(false);
+  const { token: themeToken } = theme.useToken();
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ 
+      minHeight: "100vh",
+      background: themeToken.colorBgBase
+    }}>
       <Sidebar 
         collapsed={collapsed} 
         activeNav={activeKey} 
@@ -18,7 +22,9 @@ function DashboardPage({ navItems, activeKey, onNavChange, children }) {
         navItems={navItems} 
       />
 
-      <Layout>
+      <Layout style={{
+        background: themeToken.colorBgBase
+      }}>
         <Header 
           collapsed={collapsed} 
           onCollapseToggle={() => setCollapsed(!collapsed)} 
@@ -26,7 +32,10 @@ function DashboardPage({ navItems, activeKey, onNavChange, children }) {
           navItems={navItems} 
         />
 
-        <Content style={{ margin: 24 }}>
+        <Content style={{ 
+          margin: 24,
+          background: themeToken.colorBgBase
+        }}>
           {children}
         </Content>
       </Layout>
