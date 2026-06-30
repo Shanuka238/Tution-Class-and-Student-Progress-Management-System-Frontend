@@ -5,9 +5,27 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import LoginPage from "./pages/LoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import TeacherDashboardPage from "./pages/TeacherDashboardPage";
 import StudentDashboardPage from "./pages/StudentDashboardPage";
+import ParentDashboardPage from "./pages/ParentDashboardPage";
 import { Unauthorized, NotFound } from "./pages/ErrorPages";
 import "./App.css";
+import { useAuth } from "./context/AuthContext";
+
+// Role-based redirect component
+function RoleBasedRedirect() {
+  const { user } = useAuth();
+
+  const dashboardRoutes = {
+    admin: "/admin/dashboard",
+    teacher: "/teacher/dashboard",
+    student: "/student/dashboard",
+    parent: "/parent/dashboard",
+  };
+
+  const route = dashboardRoutes[user?.role] || "/admin/dashboard";
+  return <Navigate to={route} replace />;
+}
 
 function AppContent() {
   const { isDarkMode } = useTheme();
@@ -80,15 +98,35 @@ function AppContent() {
               }
             />
 
+            {/* Teacher routes */}
+            <Route
+              path="/teacher/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["teacher"]}>
+                  <TeacherDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Parent routes */}
+            <Route
+              path="/parent/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["parent"]}>
+                  <ParentDashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
             {/* Error pages */}
             <Route path="/unauthorized" element={<Unauthorized />} />
 
-            {/* Root redirect - goes to dashboard, ProtectedRoute handles auth */}
+            {/* Root redirect - goes to role-based dashboard */}
             <Route 
               path="/" 
               element={
                 <ProtectedRoute>
-                  <Navigate to="/admin/dashboard" replace />
+                  <RoleBasedRedirect />
                 </ProtectedRoute>
               } 
             />

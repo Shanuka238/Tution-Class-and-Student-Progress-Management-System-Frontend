@@ -23,8 +23,6 @@ function StudentDashboardPage() {
         return <ComingSoon label="My Performance" />;
       case "payments":
         return <ComingSoon label="Payments" />;
-      case "chatbot":
-        return <ComingSoon label="AI Assistant" />;
         
       default:
         return <StudentDashboardOverview />;
