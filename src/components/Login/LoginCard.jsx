@@ -1,4 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
+import { Button } from "antd";
+import { SunOutlined, MoonOutlined } from "@ant-design/icons";
+import { useTheme } from "../../context/ThemeContext";
 import LoginFormInputs from "./LoginFormInputs";
 import LoginFormOptions from "./LoginFormOptions";
 import LoginButton from "./LoginButton";
@@ -6,36 +9,26 @@ import LoginButton from "./LoginButton";
 function LoginCard({ formData, loading, error, onFormChange, onSubmit }) {
   const [focusedField, setFocusedField] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const cardRef = useRef(null);
-
-  // 3D tilt effect
-  const handleCardMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -5;
-    const rotateY = ((x - centerX) / centerX) * 5;
-    cardRef.current.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px)`;
-  };
-
-  const handleCardMouseLeave = () => {
-    if (cardRef.current) {
-      cardRef.current.style.transform = "perspective(1000px) rotateX(0) rotateY(0) translateY(0)";
-    }
-  };
+  const { isDarkMode, toggleTheme } = useTheme();
 
   return (
     <div className="login-right">
-      <div
-        className="login-card"
-        ref={cardRef}
-        onMouseMove={handleCardMouseMove}
-        onMouseLeave={handleCardMouseLeave}
-      >
+      <div className="login-card">
         <div className="card-glow"></div>
+
+        {/* Theme toggle button */}
+        <Button
+          type="text"
+          icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
+          onClick={toggleTheme}
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+            fontSize: "18px",
+          }}
+          title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+        />
 
         {/* Header */}
         <div className="login-header">

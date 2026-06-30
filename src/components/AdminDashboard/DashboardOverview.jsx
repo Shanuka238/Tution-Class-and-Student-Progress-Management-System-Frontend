@@ -1,4 +1,5 @@
-import { Typography } from "antd";
+import { Typography, message } from "antd";
+import { useEffect, useState } from "react";
 import {
   TeamOutlined,
   BookOutlined,
@@ -7,20 +8,42 @@ import {
   FileTextOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
+import { adminAPI } from "../../services/adminApi";
 import StatCard from "../Common/StatCard";
 
 const { Text, Title } = Typography;
 
-const stats = [
-  { title: "Total Users", value: "—", icon: <TeamOutlined />, color: "#4F46E5" },
-  { title: "Active Classes", value: "—", icon: <BookOutlined />, color: "#10B981" },
-  { title: "Today's Attendance", value: "—", icon: <CheckSquareOutlined />, color: "#F59E0B" },
-  { title: "Fee Collected", value: "—", icon: <DollarOutlined />, color: "#3B82F6" },
-  { title: "Exams This Month", value: "—", icon: <FileTextOutlined />, color: "#8B5CF6" },
-];
-
 function AdminDashboardOverview() {
   const { user } = useAuth();
+  const [stats, setStats] = useState([
+    { title: "Total Users", value: "—", icon: <TeamOutlined />, color: "#4F46E5" },
+    { title: "Active Classes", value: "—", icon: <BookOutlined />, color: "#10B981" },
+    { title: "Today's Attendance", value: "—", icon: <CheckSquareOutlined />, color: "#F59E0B" },
+    { title: "Fee Collected", value: "—", icon: <DollarOutlined />, color: "#3B82F6" },
+    { title: "Exams This Month", value: "—", icon: <FileTextOutlined />, color: "#8B5CF6" },
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await adminAPI.getAllUsers();
+        const users = response.data || response;
+        const userCount = Array.isArray(users) ? users.length : 0;
+
+        setStats((prevStats) =>
+          prevStats.map((stat) =>
+            stat.title === "Total Users"
+              ? { ...stat, value: userCount.toString() }
+              : stat
+          )
+        );
+      } catch (error) {
+        console.error("Failed to fetch user count:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="dashboard-content">

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme } from "antd";
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import LoginPage from "./pages/LoginPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
@@ -8,9 +9,51 @@ import StudentDashboardPage from "./pages/StudentDashboardPage";
 import { Unauthorized, NotFound } from "./pages/ErrorPages";
 import "./App.css";
 
-function App() {
+function AppContent() {
+  const { isDarkMode } = useTheme();
+
+  const themeConfig = {
+    token: {
+      colorPrimary: "#4F46E5",
+      borderRadius: 6,
+      fontFamily: "'Inter', sans-serif",
+    },
+    algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
+    components: {
+      Menu: {
+        colorBgContainer: isDarkMode ? "#141414" : "#FFFFFF",
+        colorBgSelectedItem: isDarkMode ? "#1E1B4B" : "#EEF2FF",
+      },
+      Button: {
+        colorBgContainer: isDarkMode ? "#1F1F1F" : "#FFFFFF",
+      },
+      Card: {
+        colorBgContainer: isDarkMode ? "#141414" : "#FFFFFF",
+        colorBorderBg: isDarkMode ? "#141414" : "#FFFFFF",
+      },
+      Table: {
+        colorBgContainer: isDarkMode ? "#141414" : "#FFFFFF",
+        colorBgElevated: isDarkMode ? "#1F1F1F" : "#FFFFFF",
+      },
+      Input: {
+        colorBgContainer: isDarkMode ? "#0A0E27" : "#F8FAFC",
+        colorBgElevated: isDarkMode ? "#141414" : "#FFFFFF",
+      },
+      Select: {
+        colorBgContainer: isDarkMode ? "#0A0E27" : "#F8FAFC",
+        colorBgElevated: isDarkMode ? "#141414" : "#FFFFFF",
+      },
+      Modal: {
+        colorBgElevated: isDarkMode ? "#141414" : "#FFFFFF",
+      },
+      Dropdown: {
+        colorBgElevated: isDarkMode ? "#141414" : "#FFFFFF",
+      },
+    },
+  };
+
   return (
-    <ConfigProvider>
+    <ConfigProvider theme={themeConfig}>
       <BrowserRouter>
         <AuthProvider>
           <Routes>
@@ -56,6 +99,14 @@ function App() {
         </AuthProvider>
       </BrowserRouter>
     </ConfigProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

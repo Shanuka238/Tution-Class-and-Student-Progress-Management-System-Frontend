@@ -2,7 +2,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background: var(--color-white);
+  background: var(--color-bg);
   overflow: hidden;
 }
 
@@ -16,6 +16,10 @@
   align-items: center;
   justify-content: center;
   padding: 60px;
+}
+
+html[data-theme="dark"] .login-left {
+  background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #3730A3 100%);
 }
 
 .login-left::before {
@@ -269,7 +273,7 @@
   align-items: center;
   justify-content: center;
   padding: 40px;
-  background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%);
+  background: var(--color-bg);
   position: relative;
 }
 
@@ -288,28 +292,12 @@
 .login-card {
   width: 100%;
   max-width: 460px;
-  background: white;
+  background: var(--color-bg-container);
   border-radius: 24px;
   padding: 45px 40px;
   box-shadow: var(--shadow-xl);
   position: relative;
-  transition: transform 0.3s ease-out;
-  transform-style: preserve-3d;
-}
-
-.card-glow {
-  position: absolute;
-  inset: -2px;
-  background: linear-gradient(135deg, #4F46E5, #818CF8, #4F46E5);
-  border-radius: 24px;
-  z-index: -1;
-  opacity: 0;
-  filter: blur(20px);
-  transition: opacity 0.3s ease;
-}
-
-.login-card:hover .card-glow {
-  opacity: 0.4;
+  border: 1px solid var(--color-border);
 }
 
 .login-header {
@@ -345,6 +333,11 @@
   font-size: 13px;
   font-weight: 500;
   animation: shakeIn 0.4s ease;
+}
+
+html[data-theme="dark"] .login-error {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.3);
 }
 
 @keyframes shakeIn {
@@ -392,7 +385,7 @@
 }
 
 .role-tab.active {
-  background: white;
+  background: var(--color-bg-container);
   color: var(--color-primary);
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(79, 70, 229, 0.15);
@@ -440,12 +433,12 @@
 
 .input-group.focused .input-wrapper {
   border-color: var(--color-primary);
-  background: white;
+  background: var(--color-bg-container);
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
 .input-group.filled .input-wrapper {
-  background: white;
+  background: var(--color-bg-container);
   border-color: var(--color-border);
 }
 
@@ -550,7 +543,6 @@
 }
 
 .login-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
   box-shadow: 0 12px 28px rgba(79, 70, 229, 0.4);
 }
 
@@ -625,7 +617,7 @@
 
 .social-btn {
   padding: 12px;
-  background: white;
+  background: var(--color-bg-container);
   border: 1.5px solid var(--color-border);
   border-radius: 10px;
   font-size: 13px;

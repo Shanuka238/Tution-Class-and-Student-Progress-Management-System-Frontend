@@ -68,7 +68,7 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
       onCancel={onCancel}
       onOk={() => form.submit()}
       confirmLoading={submitting}
-      destroyOnClose
+      destroyOnClose={false}
       width={600}
     >
       <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ role: "student" }}>

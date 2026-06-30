@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Table, Button, Tag, Space, Modal, message, Typography, Popconfirm } from "antd";
+import { Table, Button, Tag, Space, Modal, message, Typography, Popconfirm, theme } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { adminAPI } from "../../services/adminApi";
 import UserModal from "./UserModal";
@@ -7,6 +7,7 @@ import UserModal from "./UserModal";
 const { Title } = Typography;
 
 const UserTable = () => {
+  const { token: themeToken } = theme.useToken();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -120,7 +121,12 @@ const UserTable = () => {
   ], [handleEdit, handleDeleteConfirmed]);
 
   return (
-    <div style={{ padding: "24px", background: "#fff", borderRadius: "8px" }}>
+    <div style={{ 
+      padding: "24px", 
+      background: themeToken.colorBgContainer, 
+      borderRadius: "8px",
+      border: `1px solid ${themeToken.colorBorderSecondary}`
+    }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
         <Title level={3} style={{ margin: 0 }}>System User Directory</Title>
         <Button 
