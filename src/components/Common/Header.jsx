@@ -92,9 +92,13 @@ function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
           <Dropdown menu={dropdownItems} placement="bottomRight" trigger={["click"]}>
             <div className="user-trigger">
               <Avatar
-                style={{ backgroundColor: "#4F46E5", verticalAlign: "middle" }}
+                src={user?.profile_image || undefined}
+                icon={!user?.profile_image ? <UserOutlined /> : undefined}
+                style={{ 
+                  backgroundColor: "#4F46E5", 
+                  verticalAlign: "middle" 
+                }}
                 size="small"
-                icon={<UserOutlined />}
               />
               <div className="user-trigger-info">
                 <Text strong style={{ fontSize: 13 }}>
