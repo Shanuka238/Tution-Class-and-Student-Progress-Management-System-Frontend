@@ -86,6 +86,38 @@ export const authAPI = {
     return data.data?.user || data.user;
   },
 
+  async uploadProfileImage(file) {
+    const formData = new FormData();
+    formData.append("profileImage", file);
+
+    const token = getToken();
+    const headers = {};
+    
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE}${API_URLS.AUTH.UPLOAD_PROFILE_IMAGE}`, {
+      method: "POST",
+      headers,
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        removeToken();
+      }
+      throw { 
+        status: response.status, 
+        message: data.message || "Something went wrong" 
+      };
+    }
+
+    return data;
+  },
+
   logout() {
     removeToken();
   },

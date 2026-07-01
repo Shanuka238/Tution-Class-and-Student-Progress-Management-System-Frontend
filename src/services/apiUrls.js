@@ -3,6 +3,7 @@ export const API_URLS = {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
     ME: "/auth/me",
+    UPLOAD_PROFILE_IMAGE: "/auth/profile-image",
   },
   ADMIN: {
     USERS: "/admin/users", // Base URL path for user queries
