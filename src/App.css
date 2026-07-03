@@ -22,3 +22,8 @@
 .ant-layout-content {
   background: var(--color-bg) !important;
 }
+
+/* Dark theme - make all text white */
+[data-theme="dark"] {
+  color: #FFFFFF;
+}

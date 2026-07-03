@@ -2,6 +2,7 @@ import { useState } from "react";
 import DashboardPage from "./DashboardPage";
 import StudentDashboardOverview from "../components/StudentDashboard/DashboardOverview";
 import ComingSoon from "../components/Common/ComingSoon";
+import WeeklyTimetable from "../components/ClassManagement/WeeklyTimetable";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -14,7 +15,7 @@ function StudentDashboardPage() {
         return <StudentDashboardOverview />;
       
       case "classes":
-        return <ComingSoon label="View Timetable" />;
+        return <WeeklyTimetable />;
       case "attendance":
         return <ComingSoon label="View Attendance" />;
       case "exams":
