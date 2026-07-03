@@ -1,0 +1,44 @@
+import apiRequest from "./api.js";
+import { API_URLS } from "./apiUrls.js";
+
+export const classAPI = {
+  async getActiveClasses() {
+    return await apiRequest(API_URLS.CLASSES);
+  },
+
+  async getTimetable(day = null) {
+    const url = day ? `${API_URLS.CLASSES}/timetable?day=${day}` : `${API_URLS.CLASSES}/timetable`;
+    return await apiRequest(url);
+  },
+
+  async createClass(classData) {
+    return await apiRequest(API_URLS.CLASSES, {
+      method: "POST",
+      body: classData,
+    });
+  },
+
+  async getClassById(classId) {
+    return await apiRequest(`${API_URLS.CLASSES}/${classId}`);
+  },
+
+  async enrollStudent(studentId, classId) {
+    return await apiRequest(`${API_URLS.CLASSES}/enroll`, {
+      method: "POST",
+      body: { student_id: studentId, class_id: classId },
+    });
+  },
+
+  async dropStudent(studentId, classId) {
+    return await apiRequest(`${API_URLS.CLASSES}/drop`, {
+      method: "POST",
+      body: { student_id: studentId, class_id: classId },
+    });
+  },
+
+  async deleteClass(classId) {
+    return await apiRequest(`${API_URLS.CLASSES}/${classId}`, {
+      method: "DELETE",
+    });
+  },
+};

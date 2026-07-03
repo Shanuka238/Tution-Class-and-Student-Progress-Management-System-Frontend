@@ -4,6 +4,7 @@ import AdminDashboardOverview from "../components/AdminDashboard/DashboardOvervi
 import UserTable from "../components/UserManagement/UserTable"; 
 import ComingSoon from "../components/Common/ComingSoon";
 import { NAV_CONFIG } from "../enums/navConfig";
+import ClassSection from "../components/ClassManagement/ClassSection";
 import "../styles/Dashboard.css";
 
 function AdminDashboardPage() {
@@ -18,7 +19,7 @@ function AdminDashboardPage() {
         return <UserTable />;
         
       case "classes":
-        return <ComingSoon label="Class & Timetable" />;
+        return <ClassSection />;
       case "attendance":
         return <ComingSoon label="Attendance" />;
       case "exams":

@@ -1,15 +1,17 @@
 import { Navigate } from "react-router-dom";
+import { Spin } from "antd";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { ROLE_DASHBOARD, DEFAULT_DASHBOARD } from "../enums/userRoles";
 
 function ProtectedRoute({ children, allowedRoles = [] }) {
   const { user, loading, isAuthenticated } = useAuth();
+  const { isDarkMode } = useTheme();
 
   if (loading) {
     return (
-      <div className="loading-screen">
-        <div className="loading-spinner"></div>
-        <p>Loading EduTracker...</p>
+      <div className="loading-screen" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <Spin size="large" tip="Loading EduTracker..." style={{ color: isDarkMode ? "#FFFFFF" : undefined }} />
       </div>
     );
   }

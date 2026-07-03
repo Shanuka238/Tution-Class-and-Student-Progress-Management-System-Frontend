@@ -2,6 +2,7 @@ import { useState } from "react";
 import DashboardPage from "./DashboardPage";
 import TeacherDashboardOverview from "../components/TeacherDashboard/DashboardOverview";
 import ComingSoon from "../components/Common/ComingSoon";
+import ClassSection from "../components/ClassManagement/ClassSection";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -14,7 +15,7 @@ function TeacherDashboardPage() {
         return <TeacherDashboardOverview />;
       
       case "classes":
-        return <ComingSoon label="Class & Timetable" />;
+        return <ClassSection />;
       case "attendance":
         return <ComingSoon label="Attendance Management" />;
       case "exams":
