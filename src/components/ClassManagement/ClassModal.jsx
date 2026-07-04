@@ -51,7 +51,7 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
         schedule_start_time: values.schedule_start_time.format("HH:mm"),
         schedule_end_time: values.schedule_end_time.format("HH:mm"),
       };
-      
+
       await classAPI.createClass(normalizedValues);
       message.success("Tuition class mapped and added successfully!");
       onSuccess();
@@ -82,8 +82,16 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
           <Form.Item name="subject" label="Subject Domain" rules={[{ required: true }]}>
             <Input placeholder="e.g. Physics" />
           </Form.Item>
-          <Form.Item name="grade" label="Target Grade Standard" rules={[{ required: true }]}>
-            <Input placeholder="e.g. Grade 12" />
+          <Form.Item name="grade" label="Target Grade Standard" rules={[{ required: true, message: "Please select target grade" }]}>
+            <Select placeholder="Select Grade">
+              <Option value="6">6</Option>
+              <Option value="7">7</Option>
+              <Option value="8">8</Option>
+              <Option value="9">9</Option>
+              <Option value="10">10</Option>
+              <Option value="11">11</Option>
+              <Option value="12">12</Option>
+            </Select>
           </Form.Item>
         </div>
 
@@ -98,12 +106,12 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
         </Form.Item>
 
         {/* DatePicker for Date Selection */}
-        <Form.Item 
-          name="schedule_date" 
-          label="Select Class Date" 
+        <Form.Item
+          name="schedule_date"
+          label="Select Class Date"
           rules={[{ required: true, message: "Please select a date" }]}
         >
-          <DatePicker 
+          <DatePicker
             placeholder="Pick a date"
             style={{ width: "100%" }}
             onChange={handleDateChange}
@@ -117,12 +125,12 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
         </Form.Item>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-          <Form.Item 
-            name="schedule_start_time" 
-            label="Start Time (24h)" 
+          <Form.Item
+            name="schedule_start_time"
+            label="Start Time (24h)"
             rules={[{ required: true, message: "Start time is required" }]}
           >
-            <TimePicker 
+            <TimePicker
               format="HH:mm"
               placeholder="Select start time"
               minuteStep={15}
@@ -130,12 +138,12 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
             />
           </Form.Item>
 
-          <Form.Item 
-            name="schedule_end_time" 
-            label="End Time (24h)" 
+          <Form.Item
+            name="schedule_end_time"
+            label="End Time (24h)"
             rules={[{ required: true, message: "End time is required" }]}
           >
-            <TimePicker 
+            <TimePicker
               format="HH:mm"
               placeholder="Select end time"
               minuteStep={15}

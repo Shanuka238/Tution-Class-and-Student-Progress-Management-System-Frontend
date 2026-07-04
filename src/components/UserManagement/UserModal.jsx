@@ -107,8 +107,16 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
         {/* Conditional fields based on selected role */}
         {selectedRole === "student" && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-            <Form.Item name="grade" label="Academic Grade Standard" rules={[{ required: true }]}>
-              <Input placeholder="e.g. Grade 11" />
+            <Form.Item name="grade" label="Academic Grade Standard" rules={[{ required: true, message: "Please select a grade" }]}>
+              <Select placeholder="Select Grade">
+                <Option value="6">Grade 6</Option>
+                <Option value="7">Grade 7</Option>
+                <Option value="8">Grade 8</Option>
+                <Option value="9">Grade 9</Option>
+                <Option value="10">Grade 10</Option>
+                <Option value="11">Grade 11</Option>
+                <Option value="12">Grade 12</Option>
+              </Select>
             </Form.Item>
             <Form.Item name="date_of_birth" label="Date of Birth" rules={[{ required: true }]}>
               <DatePicker style={{ width: "100%" }} />
