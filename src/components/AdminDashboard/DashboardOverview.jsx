@@ -1,4 +1,4 @@
-import { Typography, message } from "antd";
+import { Typography } from "antd";
 import { useEffect, useState } from "react";
 import {
   TeamOutlined,
@@ -9,15 +9,30 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
 import { adminAPI } from "../../services/adminApi";
+import { classAPI } from "../../services/classApi";
 import StatCard from "../Common/StatCard";
 
 const { Text, Title } = Typography;
+
+// Returns Monday and Sunday dates of the current week
+function getCurrentWeekRange() {
+  const now = new Date();
+  const day = now.getDay(); // 0 = Sunday, 1 = Monday, ...
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const monday = new Date(now);
+  monday.setHours(0, 0, 0, 0);
+  monday.setDate(now.getDate() + diffToMonday);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  return { monday, sunday };
+}
 
 function AdminDashboardOverview() {
   const { user } = useAuth();
   const [stats, setStats] = useState([
     { title: "Total Users", value: "—", icon: <TeamOutlined />, color: "#4F46E5" },
-    { title: "Active Classes", value: "—", icon: <BookOutlined />, color: "#10B981" },
+    { title: "Active Classes This Week", value: "—", icon: <BookOutlined />, color: "#10B981" },
     { title: "Today's Attendance", value: "—", icon: <CheckSquareOutlined />, color: "#F59E0B" },
     { title: "Fee Collected", value: "—", icon: <DollarOutlined />, color: "#3B82F6" },
     { title: "Exams This Month", value: "—", icon: <FileTextOutlined />, color: "#8B5CF6" },
@@ -26,19 +41,37 @@ function AdminDashboardOverview() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await adminAPI.getAllUsers();
-        const users = response.data || response;
+        // Fetch total users
+        const userResponse = await adminAPI.getAllUsers();
+        const users = userResponse.data || userResponse;
         const userCount = Array.isArray(users) ? users.length : 0;
 
+        // Fetch active classes and filter for current week
+        let weekClassCount = 0;
+        try {
+          const classResponse = await classAPI.getActiveClasses();
+          const classes = classResponse.data || classResponse;
+          if (Array.isArray(classes)) {
+            const { monday, sunday } = getCurrentWeekRange();
+            weekClassCount = classes.filter((cls) => {
+              if (!cls.schedule_date) return false;
+              const classDate = new Date(cls.schedule_date);
+              return classDate >= monday && classDate <= sunday;
+            }).length;
+          }
+        } catch (classError) {
+          console.error("Failed to fetch class count:", classError);
+        }
+
         setStats((prevStats) =>
-          prevStats.map((stat) =>
-            stat.title === "Total Users"
-              ? { ...stat, value: userCount.toString() }
-              : stat
-          )
+          prevStats.map((stat) => {
+            if (stat.title === "Total Users") return { ...stat, value: userCount.toString() };
+            if (stat.title === "Active Classes This Week") return { ...stat, value: weekClassCount.toString() };
+            return stat;
+          })
         );
       } catch (error) {
-        console.error("Failed to fetch user count:", error);
+        console.error("Failed to fetch dashboard stats:", error);
       }
     };
 
