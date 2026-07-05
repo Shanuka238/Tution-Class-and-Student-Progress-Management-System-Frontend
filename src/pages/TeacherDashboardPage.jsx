@@ -3,6 +3,7 @@ import DashboardPage from "./DashboardPage";
 import TeacherDashboardOverview from "../components/TeacherDashboard/DashboardOverview";
 import ComingSoon from "../components/Common/ComingSoon";
 import ClassSection from "../components/ClassManagement/ClassSection";
+import AttendanceManager from "../components/Attendance/AttendanceManager";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -17,7 +18,7 @@ function TeacherDashboardPage() {
       case "classes":
         return <ClassSection />;
       case "attendance":
-        return <ComingSoon label="Attendance Management" />;
+        return <AttendanceManager />;
       case "exams":
         return <ComingSoon label="Exams & Results" />;
       case "analytics":
