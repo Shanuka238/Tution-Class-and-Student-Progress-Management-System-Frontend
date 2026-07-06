@@ -1,31 +1,25 @@
 import apiRequest from "./api.js";
+import { API_URLS } from "./apiUrls.js";
 
 export const attendanceAPI = {
-  /**
-   * Fetch daily tracking status matrix logs for an active class
-   */
-  async getClassAttendance(classId, dateString) {
-    return await apiRequest(`/attendance/${classId}?date=${dateString}`);
+  async getSessionAttendance(sessionId) {
+    return await apiRequest(`${API_URLS.ATTENDANCE}/session/${sessionId}`);
   },
 
-  /**
-   * Checks if attendance has already been marked for a class on a given date
-   * Returns { marked: true/false }
-   */
-  async checkAttendanceExists(classId, dateString) {
-    return await apiRequest(`/attendance/${classId}/exists?date=${dateString}`);
+  async checkSessionAttendanceExists(sessionId) {
+    return await apiRequest(`${API_URLS.ATTENDANCE}/session/${sessionId}/exists`);
   },
 
-  /**
-   * Submits a chunk payload array directly down to the bulk write handler
-   */
-  async saveBulkAttendance(classId, dateString, recordsArray) {
-    return await apiRequest(`/attendance/${classId}/bulk`, {
+  async saveBulkAttendance(sessionId, recordsArray) {
+    return await apiRequest(`${API_URLS.ATTENDANCE}/session/${sessionId}/bulk`, {
       method: "POST",
       body: {
-        date: dateString,
-        records: recordsArray, // Expects [{ student_id: String, status: String }]
+        records: recordsArray,
       },
     });
+  },
+
+  async getAttendanceRegister(courseId) {
+    return await apiRequest(`${API_URLS.ATTENDANCE}/register/${courseId}`);
   },
 };

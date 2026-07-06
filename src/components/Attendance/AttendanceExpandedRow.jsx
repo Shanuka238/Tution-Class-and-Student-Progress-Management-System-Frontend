@@ -6,13 +6,6 @@ const STATUS_COLORS = {
   late: "warning",
 };
 
-/**
- * Expandable row shown beneath each class row when it has been marked.
- * Fetches and displays the per-student attendance logs for that class+date.
- *
- * Props:
- *  - logs: array of attendance log objects | undefined (undefined = still loading)
- */
 const AttendanceExpandedRow = ({ logs }) => {
   const { token: themeToken } = theme.useToken();
 

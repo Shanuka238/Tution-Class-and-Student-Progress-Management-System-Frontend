@@ -9,5 +9,6 @@ export const API_URLS = {
     USERS: "/admin/users", // Base URL path for user queries
   },
   CLASSES: "/classes",
+  ATTENDANCE: "/attendance",
   HEALTH: "/health",
 };
