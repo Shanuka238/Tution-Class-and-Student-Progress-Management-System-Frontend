@@ -8,33 +8,29 @@ import dayjs from "dayjs";
 import AttendanceHeader from "./AttendanceHeader";
 import AttendanceTable from "./AttendanceTable";
 import AttendanceMarkingDrawer from "./AttendanceMarkingDrawer";
+import SessionList from "../ClassManagement/SessionList";
+import AttendanceRegisterDrawer from "./AttendanceRegisterDrawer";
 
-/**
- * AttendanceManager — orchestrator component.
- * Owns all state and API calls; delegates rendering to sub-components.
- */
+
 const AttendanceManager = () => {
   const { token: themeToken } = theme.useToken();
 
-  // ── Core state ──────────────────────────────────────────────────────────────
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [targetDate, setTargetDate] = useState(dayjs());
 
-  // { classId: boolean } — whether attendance has been marked for the selected date
-  const [markedMap, setMarkedMap] = useState({});
-  // { classId: log[] | undefined } — cached attendance rows for expandable view
-  const [savedAttendanceMap, setSavedAttendanceMap] = useState({});
-  // Set of expanded class IDs
-  const [expandedRows, setExpandedRows] = useState(new Set());
-
-  // ── Drawer state ────────────────────────────────────────────────────────────
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [activeClass, setActiveClass] = useState(null);
+  const [activeSession, setActiveSession] = useState(null);
+  const [activeSessionIsMarked, setActiveSessionIsMarked] = useState(false);
   const [roster, setRoster] = useState([]);
-  const [attendanceMap, setAttendanceMap] = useState({}); // { studentId: status }
+  const [attendanceMap, setAttendanceMap] = useState({});
   const [drawerLoading, setDrawerLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const [sessionsDrawerVisible, setSessionsDrawerVisible] = useState(false);
+  const [selectedCourseForSessions, setSelectedCourseForSessions] = useState(null);
+  const [registerDrawerVisible, setRegisterDrawerVisible] = useState(false);
+  const [selectedCourseForRegister, setSelectedCourseForRegister] = useState(null);
 
   const currentUser = useMemo(
     () => JSON.parse(localStorage.getItem("edutracker_user") || "{}"),
@@ -42,28 +38,7 @@ const AttendanceManager = () => {
   );
   const isAdmin = currentUser.role === "admin";
 
-  // ── Helpers ─────────────────────────────────────────────────────────────────
-  /** Resolves the marked-status map for a list of classes on a date. */
-  const resolveMarkedMap = useCallback(async (classList, date) => {
-    const dateStr = date.format("YYYY-MM-DD");
-    const results = await Promise.allSettled(
-      classList.map((cls) => attendanceAPI.checkAttendanceExists(cls._id, dateStr))
-    );
-    const newMarkedMap = {};
-    classList.forEach((cls, idx) => {
-      const res = results[idx];
-      newMarkedMap[cls._id] =
-        res.status === "fulfilled"
-          ? (res.value?.data?.marked ?? res.value?.marked ?? false)
-          : false;
-    });
-    return newMarkedMap;
-  }, []);
-
-  // ── Initial load: classes + marked status in one go ──────────────────────────
-  // Keeps the table in loading state until BOTH fetches are complete,
-  // preventing the "Not Marked → Marked" flash on first render.
-  const initialLoad = useCallback(async (date) => {
+  const fetchClassSchedule = useCallback(async () => {
     setLoading(true);
     try {
       const response = await classAPI.getActiveClasses();
@@ -75,70 +50,34 @@ const AttendanceManager = () => {
               String(c.teacher_id?._id || c.teacher_id) ===
               String(currentUser.profile_id || currentUser._id)
           );
-
-      // Fetch marked status while still inside the loading state
-      const newMarkedMap =
-        filtered.length > 0 ? await resolveMarkedMap(filtered, date) : {};
-
-      // Single batched update — table renders once with full data
       setClasses(filtered);
-      setMarkedMap(newMarkedMap);
-      setExpandedRows(new Set());
-      setSavedAttendanceMap({});
+      return filtered;
     } catch (error) {
-      message.error(error.message || "Failed to load attendance data");
+      message.error(error.message || "Failed to load class list");
+      return [];
     } finally {
       setLoading(false);
     }
-  }, [isAdmin, currentUser, resolveMarkedMap]);
+  }, [isAdmin, currentUser]);
 
   useEffect(() => {
-    initialLoad(targetDate);
-  }, [initialLoad]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchClassSchedule();
+  }, [fetchClassSchedule]);
 
-  // ── Date change: re-check marked status for the new date ───────────────────
-  const handleDateChange = async (date) => {
-    setTargetDate(date);
-    setExpandedRows(new Set());
-    setSavedAttendanceMap({});
-    if (classes.length === 0) return;
-    const newMarkedMap = await resolveMarkedMap(classes, date);
-    setMarkedMap(newMarkedMap);
-  };
-
-  // ── Expandable row: fetch attendance for a class ─────────────────────────────
-  const fetchSavedAttendance = async (classRecord) => {
-    try {
-      const res = await attendanceAPI.getClassAttendance(
-        classRecord._id,
-        targetDate.format("YYYY-MM-DD")
-      );
-      const logs = res.data || res;
-      setSavedAttendanceMap((prev) => ({ ...prev, [classRecord._id]: logs }));
-    } catch {
-      setSavedAttendanceMap((prev) => ({ ...prev, [classRecord._id]: [] }));
-    }
-  };
-
-  const handleToggleExpand = (record) => {
-    const newSet = new Set(expandedRows);
-    if (newSet.has(record._id)) {
-      newSet.delete(record._id);
-    } else {
-      newSet.add(record._id);
-      if (!savedAttendanceMap[record._id]) fetchSavedAttendance(record);
-    }
-    setExpandedRows(newSet);
-  };
-
-  // ── Open marking drawer ─────────────────────────────────────────────────────
-  const handleOpenMarkingSheet = async (classRecord) => {
+  const handleOpenMarkingSheet = async (classRecord, targetSession, isMarked = false) => {
     setActiveClass(classRecord);
     setDrawerVisible(true);
     setDrawerLoading(true);
     setAttendanceMap({});
+    setActiveSessionIsMarked(isMarked);
 
     try {
+      if (!targetSession) {
+        throw new Error("Unable to establish class session record.");
+      }
+
+      setActiveSession(targetSession);
+
       const usersResponse = await adminAPI.getAllUsers();
       const allUsers = usersResponse.data || usersResponse;
       const enrolledStudents = allUsers.filter(
@@ -148,10 +87,7 @@ const AttendanceManager = () => {
       );
       setRoster(enrolledStudents);
 
-      const attendanceRes = await attendanceAPI.getClassAttendance(
-        classRecord._id,
-        targetDate.format("YYYY-MM-DD")
-      );
+      const attendanceRes = await attendanceAPI.getSessionAttendance(targetSession._id);
       const savedLogs = attendanceRes.data || attendanceRes;
 
       const initialMap = {};
@@ -164,14 +100,15 @@ const AttendanceManager = () => {
         initialMap[studentId] = match ? match.status : "present";
       });
       setAttendanceMap(initialMap);
-    } catch {
+    } catch (err) {
+      console.error(err);
       message.error("Failed to load attendance roster");
+      setDrawerVisible(false);
     } finally {
       setDrawerLoading(false);
     }
   };
 
-  // ── Save attendance ──────────────────────────────────────────────────────────
   const handleSaveAttendanceBulk = async () => {
     setSaving(true);
     try {
@@ -180,21 +117,11 @@ const AttendanceManager = () => {
       );
 
       await attendanceAPI.saveBulkAttendance(
-        activeClass._id,
-        targetDate.format("YYYY-MM-DD"),
+        activeSession._id,
         recordPayload
       );
 
       message.success("Attendance saved successfully!");
-
-      // Mark this class as attended and invalidate its cached expand data
-      setMarkedMap((prev) => ({ ...prev, [activeClass._id]: true }));
-      setSavedAttendanceMap((prev) => {
-        const next = { ...prev };
-        delete next[activeClass._id];
-        return next;
-      });
-
       setDrawerVisible(false);
     } catch (err) {
       message.error(err.message || "Failed to save attendance");
@@ -203,7 +130,21 @@ const AttendanceManager = () => {
     }
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  const handleOpenSessions = (courseRecord) => {
+    setSelectedCourseForSessions(courseRecord);
+    setSessionsDrawerVisible(true);
+  };
+
+  const handleOpenRegister = (courseRecord) => {
+    setSelectedCourseForRegister(courseRecord);
+    setRegisterDrawerVisible(true);
+  };
+
+  const handleMarkAttendanceFromSessionList = (sessionRecord, isMarked) => {
+    setSessionsDrawerVisible(false);
+    handleOpenMarkingSheet(selectedCourseForSessions, sessionRecord, isMarked);
+  };
+
   return (
     <div
       style={{
@@ -212,24 +153,21 @@ const AttendanceManager = () => {
         borderRadius: "8px",
       }}
     >
-      <AttendanceHeader targetDate={targetDate} onDateChange={handleDateChange} />
+      <AttendanceHeader />
 
       <AttendanceTable
         classes={classes}
         loading={loading}
-        markedMap={markedMap}
-        savedAttendanceMap={savedAttendanceMap}
-        expandedRows={expandedRows}
-        onMarkClick={handleOpenMarkingSheet}
-        onToggleExpand={handleToggleExpand}
+        onSessionsClick={handleOpenSessions}
+        onRegisterClick={handleOpenRegister}
       />
 
       <AttendanceMarkingDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         activeClass={activeClass}
-        targetDate={targetDate}
-        isMarked={!!markedMap[activeClass?._id]}
+        targetDate={activeSession ? dayjs(activeSession.date) : null}
+        isMarked={activeSessionIsMarked}
         roster={roster}
         attendanceMap={attendanceMap}
         onStatusChange={(studentId, status) =>
@@ -238,6 +176,20 @@ const AttendanceManager = () => {
         onSave={handleSaveAttendanceBulk}
         loading={drawerLoading}
         saving={saving}
+      />
+
+      <SessionList
+        visible={sessionsDrawerVisible}
+        onClose={() => setSessionsDrawerVisible(false)}
+        course={selectedCourseForSessions}
+        onMarkAttendance={handleMarkAttendanceFromSessionList}
+        hideManagement={true}
+      />
+
+      <AttendanceRegisterDrawer
+        visible={registerDrawerVisible}
+        onClose={() => setRegisterDrawerVisible(false)}
+        course={selectedCourseForRegister}
       />
     </div>
   );

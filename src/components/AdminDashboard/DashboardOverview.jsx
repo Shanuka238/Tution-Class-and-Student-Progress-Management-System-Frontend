@@ -17,7 +17,7 @@ const { Text, Title } = Typography;
 // Returns Monday and Sunday dates of the current week
 function getCurrentWeekRange() {
   const now = new Date();
-  const day = now.getDay(); // 0 = Sunday, 1 = Monday, ...
+  const day = now.getDay(); 
   const diffToMonday = day === 0 ? -6 : 1 - day;
   const monday = new Date(now);
   monday.setHours(0, 0, 0, 0);
@@ -41,12 +41,9 @@ function AdminDashboardOverview() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch total users
         const userResponse = await adminAPI.getAllUsers();
         const users = userResponse.data || userResponse;
         const userCount = Array.isArray(users) ? users.length : 0;
-
-        // Fetch active classes and filter for current week
         let weekClassCount = 0;
         try {
           const classResponse = await classAPI.getActiveClasses();

@@ -1,22 +1,6 @@
 import { Table, Button, Drawer, Radio, Space, Avatar, theme } from "antd";
 import { UserOutlined, SaveOutlined } from "@ant-design/icons";
 
-/**
- * Slide-out drawer for marking or editing attendance for a single class.
- *
- * Props:
- *  - visible: boolean
- *  - onClose: () => void
- *  - activeClass: class object | null
- *  - targetDate: dayjs object
- *  - isMarked: boolean (true = editing existing records)
- *  - roster: array of student user objects
- *  - attendanceMap: { studentId: status }
- *  - onStatusChange: (studentId, status) => void
- *  - onSave: () => void
- *  - loading: boolean (roster loading)
- *  - saving: boolean (save in-progress)
- */
 const AttendanceMarkingDrawer = ({
   visible,
   onClose,

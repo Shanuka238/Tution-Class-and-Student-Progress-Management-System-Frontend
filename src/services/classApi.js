@@ -41,4 +41,21 @@ export const classAPI = {
       method: "DELETE",
     });
   },
+
+  async getCourseSessions(classId) {
+    return await apiRequest(`${API_URLS.CLASSES}/${classId}/sessions`);
+  },
+
+  async createSession(classId, dateString, startTime, endTime) {
+    return await apiRequest(`${API_URLS.CLASSES}/${classId}/sessions`, {
+      method: "POST",
+      body: { date: dateString, start_time: startTime, end_time: endTime },
+    });
+  },
+
+  async deleteSession(sessionId) {
+    return await apiRequest(`${API_URLS.CLASSES}/sessions/${sessionId}`, {
+      method: "DELETE",
+    });
+  },
 };

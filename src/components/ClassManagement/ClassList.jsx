@@ -4,6 +4,7 @@ import { PlusOutlined, CalendarOutlined, TeamOutlined, DeleteOutlined } from "@a
 import { classAPI } from "../../services/classApi";
 import ClassModal from "./ClassModal";
 import EnrollDrawer from "./EnrollDrawer";
+import SessionList from "./SessionList";
 
 const { Title } = Typography;
 
@@ -15,6 +16,8 @@ const ClassList = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [sessionListVisible, setSessionListVisible] = useState(false);
+  const [selectedCourseForSessions, setSelectedCourseForSessions] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
   const canManage = ["admin", "teacher"].includes(user.role);
@@ -93,14 +96,11 @@ const ClassList = () => {
       },
     },
     {
-      title: "Schedule Slot & Room",
+      title: "Room/Venue",
       key: "schedule",
       render: (_, record) => (
         <div>
-          <div><CalendarOutlined /> <strong>{record.schedule_days}</strong></div>
-          <div style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>
-            {record.schedule_start_time} - {record.schedule_end_time} | Venue: <Tag color="blue">{record.venue}</Tag>
-          </div>
+          <Tag color="blue">{record.venue}</Tag>
         </div>
       ),
     },
@@ -134,6 +134,16 @@ const ClassList = () => {
             onClick={() => handleEnrollStudents(record)}
           >
             Enroll Students
+          </Button>
+          <Button
+            size="small"
+            icon={<CalendarOutlined />}
+            onClick={() => {
+              setSelectedCourseForSessions(record);
+              setSessionListVisible(true);
+            }}
+          >
+            Sessions
           </Button>
           {canManage && (
             <Popconfirm
@@ -247,6 +257,12 @@ const ClassList = () => {
           onEnrollSuccess={() => { setDrawerVisible(false); fetchClasses(); }}
         />
       )}
+
+      <SessionList
+        visible={sessionListVisible}
+        onClose={() => setSessionListVisible(false)}
+        course={selectedCourseForSessions}
+      />
     </div>
   );
 };

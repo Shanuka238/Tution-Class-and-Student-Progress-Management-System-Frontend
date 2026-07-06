@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Select, InputNumber, message, TimePicker, DatePicker } from "antd";
-import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
+import { Modal, Form, Input, Select, InputNumber, message } from "antd";
 import { classAPI } from "../../services/classApi";
 import { adminAPI } from "../../services/adminApi";
 
-dayjs.extend(customParseFormat);
 
 const { Option } = Select;
 
@@ -13,12 +10,10 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
   const [form] = Form.useForm();
   const [teachers, setTeachers] = useState([]);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(dayjs());
 
   useEffect(() => {
     if (visible) {
       form.resetFields();
-      setSelectedDate(dayjs());
       const loadTeachers = async () => {
         try {
           const res = await adminAPI.getAllUsers();
@@ -34,25 +29,10 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
     }
   }, [visible, form]);
 
-  const handleDateChange = (date) => {
-    if (date) {
-      setSelectedDate(date);
-      const dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.day()];
-      form.setFieldValue("schedule_days", dayName);
-    }
-  };
-
   const onFinish = async (values) => {
     setSubmitting(true);
     try {
-      const normalizedValues = {
-        ...values,
-        schedule_date: selectedDate.toDate(),
-        schedule_start_time: values.schedule_start_time.format("HH:mm"),
-        schedule_end_time: values.schedule_end_time.format("HH:mm"),
-      };
-
-      await classAPI.createClass(normalizedValues);
+      await classAPI.createClass(values);
       message.success("Tuition class mapped and added successfully!");
       onSuccess();
     } catch (error) {
@@ -105,52 +85,7 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
           </Select>
         </Form.Item>
 
-        {/* DatePicker for Date Selection */}
-        <Form.Item
-          name="schedule_date"
-          label="Select Class Date"
-          rules={[{ required: true, message: "Please select a date" }]}
-        >
-          <DatePicker
-            placeholder="Pick a date"
-            style={{ width: "100%" }}
-            onChange={handleDateChange}
-            value={selectedDate}
-          />
-        </Form.Item>
 
-        {/* Hidden field to store schedule_days */}
-        <Form.Item name="schedule_days" hidden>
-          <Input />
-        </Form.Item>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-          <Form.Item
-            name="schedule_start_time"
-            label="Start Time (24h)"
-            rules={[{ required: true, message: "Start time is required" }]}
-          >
-            <TimePicker
-              format="HH:mm"
-              placeholder="Select start time"
-              minuteStep={15}
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="schedule_end_time"
-            label="End Time (24h)"
-            rules={[{ required: true, message: "End time is required" }]}
-          >
-            <TimePicker
-              format="HH:mm"
-              placeholder="Select end time"
-              minuteStep={15}
-              style={{ width: "100%" }}
-            />
-          </Form.Item>
-        </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "16px" }}>
           <Form.Item name="venue" label="Classroom Location/Hall Room" rules={[{ required: true }]}>

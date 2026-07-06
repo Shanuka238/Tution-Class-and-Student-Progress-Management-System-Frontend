@@ -2,10 +2,6 @@ import { Space, Typography, DatePicker } from "antd";
 
 const { Title, Text } = Typography;
 
-/**
- * Header bar for the Attendance page.
- * Shows title + date picker used to select which day's attendance to view/mark.
- */
 const AttendanceHeader = ({ targetDate, onDateChange }) => (
   <div
     style={{
@@ -22,17 +18,9 @@ const AttendanceHeader = ({ targetDate, onDateChange }) => (
         Student Attendance Verification
       </Title>
       <Text type="secondary">
-        Select a date to view or mark attendance for each class.
+        Select a class to view its sessions and manage attendance.
       </Text>
     </div>
-    <Space>
-      <Text strong>Date:</Text>
-      <DatePicker
-        value={targetDate}
-        onChange={(date) => date && onDateChange(date)}
-        allowClear={false}
-      />
-    </Space>
   </div>
 );
 
