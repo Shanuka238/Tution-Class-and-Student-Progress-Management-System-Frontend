@@ -1,6 +1,5 @@
 import { Table, Button, Tag, Space, theme } from "antd";
-import { CalendarOutlined, CheckCircleOutlined, EditOutlined, BookOutlined, FileTextOutlined } from "@ant-design/icons";
-import AttendanceExpandedRow from "./AttendanceExpandedRow";
+import { CalendarOutlined,BookOutlined } from "@ant-design/icons";
 
 const AttendanceTable = ({
   classes,

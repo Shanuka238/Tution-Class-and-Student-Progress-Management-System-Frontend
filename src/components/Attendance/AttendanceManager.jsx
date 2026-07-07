@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { message, theme } from "antd";
 import { classAPI } from "../../services/classApi";
-import { adminAPI } from "../../services/adminApi";
 import { attendanceAPI } from "../../services/attendanceApi";
 import dayjs from "dayjs";
 
@@ -78,13 +77,20 @@ const AttendanceManager = () => {
 
       setActiveSession(targetSession);
 
-      const usersResponse = await adminAPI.getAllUsers();
-      const allUsers = usersResponse.data || usersResponse;
-      const enrolledStudents = allUsers.filter(
-        (item) =>
-          item.user?.role === "student" &&
-          item.profile?.grade?.toString() === classRecord.grade?.toString()
-      );
+      const enrolledStudents = (classRecord.enrolled_students || []).map(student => {
+        const parts = (student.name || "").split(" ");
+        return {
+          profile: {
+            _id: student.id || student._id,
+            student_number: student.student_number
+          },
+          user: {
+            first_name: parts[0] || "",
+            last_name: parts.slice(1).join(" ") || ""
+          }
+        };
+      });
+      
       setRoster(enrolledStudents);
 
       const attendanceRes = await attendanceAPI.getSessionAttendance(targetSession._id);
