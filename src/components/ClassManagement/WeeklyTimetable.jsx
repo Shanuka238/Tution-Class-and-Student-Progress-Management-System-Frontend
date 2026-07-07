@@ -12,10 +12,31 @@ const WeeklyTimetable = () => {
 
   const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+  const getWeekDates = useCallback(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+    const monday = new Date(today.setDate(diff));
+
+    const weekStart = new Date(monday);
+    weekStart.setDate(weekStart.getDate() + weekOffset * 7);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    return { weekStart, weekEnd };
+  }, [weekOffset]);
+
   const fetchClasses = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await classAPI.getTimetable();
+      const { weekStart, weekEnd } = getWeekDates();
+      const startStr = weekStart.toISOString().split("T")[0];
+      const endStr = weekEnd.toISOString().split("T")[0];
+      
+      const response = await classAPI.getTimetable(startStr, endStr);
 
       let classesData = [];
       if (response && typeof response === 'object') {
@@ -35,31 +56,14 @@ const WeeklyTimetable = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getWeekDates]);
 
   useEffect(() => {
     fetchClasses();
 
-    const interval = setInterval(fetchClasses, 5000);
+    const interval = setInterval(fetchClasses, 15000); // 15 seconds polling to save API calls
     return () => clearInterval(interval);
   }, [fetchClasses]);
-
-  const getWeekDates = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(today.setDate(diff));
-
-    const weekStart = new Date(monday);
-    weekStart.setDate(weekStart.getDate() + weekOffset * 7);
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
-    return { weekStart, weekEnd };
-  };
 
   const isClassInWeek = (classDate) => {
     if (!classDate) return false;
@@ -98,22 +102,18 @@ const WeeklyTimetable = () => {
   };
 
   const getClassesForDay = (dayIndex) => {
-    const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
     return classes
       .filter(cls => {
-        if (cls.schedule_date) {
-          if (!isClassInWeek(cls.schedule_date)) return false;
-          const classDate = new Date(cls.schedule_date);
-          const dayOfWeek = classDate.getDay();
-          const classDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; 
-          return classDay === dayIndex;
-        }
-
-        return cls.schedule_days === DAYS_OF_WEEK[dayIndex];
+        if (!cls.date) return false;
+        const classDate = new Date(cls.date);
+        const dayOfWeek = classDate.getDay();
+        const classDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; 
+        return classDay === dayIndex;
       })
       .sort((a, b) => {
-        return a.schedule_start_time.localeCompare(b.schedule_start_time);
+        const timeA = a.start_time || "";
+        const timeB = b.start_time || "";
+        return timeA.localeCompare(timeB);
       });
   };
 
@@ -303,8 +303,9 @@ const WeeklyTimetable = () => {
                 {dayClasses.length > 0 ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {dayClasses.map((cls) => {
-                      const teacher = cls.teacher_id?.user_id;
-                      const borderColor = getClassColor(cls.grade);
+                      const course = cls.course_id || {};
+                      const teacher = course.teacher_id?.user_id;
+                      const borderColor = getClassColor(course.grade);
 
                       return (
                         <div
@@ -340,7 +341,7 @@ const WeeklyTimetable = () => {
                             fontWeight: 700,
                             borderRadius: "0 8px 0 4px"
                           }}>
-                            Grade {cls.grade}
+                            Grade {course.grade}
                           </div>
 
                           {/* Class Name and Subject */}
@@ -351,7 +352,7 @@ const WeeklyTimetable = () => {
                               color: themeToken.colorText,
                               marginBottom: "4px"
                             }}>
-                              {cls.class_name}
+                              {course.class_name}
                             </div>
                             <div style={{
                               fontSize: "12px",
@@ -361,7 +362,7 @@ const WeeklyTimetable = () => {
                               gap: "4px"
                             }}>
                               <BookOutlined style={{ fontSize: "11px" }} />
-                              {cls.subject}
+                              {course.subject}
                             </div>
                           </div>
 
@@ -372,18 +373,27 @@ const WeeklyTimetable = () => {
                             marginBottom: "10px"
                           }} />
 
-                          {/* Time */}
+                          {/* Time & Status */}
                           <div style={{
-                            fontSize: "12px",
-                            marginBottom: "6px",
                             display: "flex",
+                            justifyContent: "space-between",
                             alignItems: "center",
-                            gap: "6px",
-                            fontWeight: 500,
-                            color: themeToken.colorText
+                            marginBottom: "6px"
                           }}>
-                            <ClockCircleOutlined style={{ color: borderColor, fontSize: "13px" }} />
-                            {cls.schedule_start_time} - {cls.schedule_end_time}
+                            <div style={{
+                              fontSize: "12px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              fontWeight: 500,
+                              color: themeToken.colorText
+                            }}>
+                              <ClockCircleOutlined style={{ color: borderColor, fontSize: "13px" }} />
+                              {cls.start_time} - {cls.end_time}
+                            </div>
+                            {cls.status === "cancelled" && (
+                              <Tag color="red" style={{ margin: 0, fontSize: "10px", lineHeight: "14px" }}>Cancelled</Tag>
+                            )}
                           </div>
 
                           {/* Teacher */}
@@ -408,7 +418,7 @@ const WeeklyTimetable = () => {
                             color: themeToken.colorTextSecondary
                           }}>
                             <EnvironmentOutlined style={{ fontSize: "12px" }} />
-                            {cls.venue}
+                            {course.venue}
                           </div>
                         </div>
                       );

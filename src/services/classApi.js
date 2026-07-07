@@ -6,8 +6,11 @@ export const classAPI = {
     return await apiRequest(API_URLS.CLASSES);
   },
 
-  async getTimetable(day = null) {
-    const url = day ? `${API_URLS.CLASSES}/timetable?day=${day}` : `${API_URLS.CLASSES}/timetable`;
+  async getTimetable(startDate = null, endDate = null) {
+    let url = `${API_URLS.CLASSES}/timetable`;
+    if (startDate && endDate) {
+      url += `?startDate=${startDate}&endDate=${endDate}`;
+    }
     return await apiRequest(url);
   },
 
