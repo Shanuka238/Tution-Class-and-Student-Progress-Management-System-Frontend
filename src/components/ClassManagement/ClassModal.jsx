@@ -75,18 +75,6 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
           </Form.Item>
         </div>
 
-        <Form.Item name="teacher_id" label="Assigned Educator" rules={[{ required: true }]}>
-          <Select placeholder="Select teacher from directory roster">
-            {teachers.map(t => (
-              <Option key={t.profile?._id} value={t.profile?._id || t.user?._id}>
-                {t.user?.first_name} {t.user?.last_name} ({t.profile?.subjects || "General"})
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-
-
         <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "16px" }}>
           <Form.Item name="venue" label="Classroom Location/Hall Room" rules={[{ required: true }]}>
             <Input placeholder="e.g. Hall A, Auditorium 2" />

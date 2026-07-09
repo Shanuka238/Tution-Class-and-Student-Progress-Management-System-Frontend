@@ -88,14 +88,6 @@ const ClassList = () => {
       ),
     },
     {
-      title: "Teacher",
-      key: "teacher",
-      render: (_, record) => {
-        const teacherUser = record.teacher_id?.user_id;
-        return teacherUser ? `${teacherUser.first_name} ${teacherUser.last_name}` : "Unassigned";
-      },
-    },
-    {
       title: "Room/Venue",
       key: "schedule",
       render: (_, record) => (
