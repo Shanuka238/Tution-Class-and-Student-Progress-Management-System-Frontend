@@ -2,6 +2,10 @@ import apiRequest from "./api.js";
 import { API_URLS } from "./apiUrls.js";
 
 export const classAPI = {
+  async getMyClasses() {
+    return await apiRequest(`${API_URLS.CLASSES}/student/me`);
+  },
+
   async getActiveClasses() {
     return await apiRequest(API_URLS.CLASSES);
   },

@@ -304,7 +304,7 @@ const WeeklyTimetable = () => {
                   <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {dayClasses.map((cls) => {
                       const course = cls.course_id || {};
-                      const teacher = course.teacher_id?.user_id;
+                      const teacher = cls.teacher_id?.user_id;
                       const borderColor = getClassColor(course.grade);
 
                       return (
