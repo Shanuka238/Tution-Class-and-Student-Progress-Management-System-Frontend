@@ -9,6 +9,8 @@ import {
 } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
 import StatCard from "../Common/StatCard";
+import { attendanceAPI } from "../../services/attendanceApi";
+import { classAPI } from "../../services/classApi";
 
 const { Text, Title } = Typography;
 
@@ -21,6 +23,40 @@ function StudentDashboardOverview() {
     { title: "Average Grade", value: "—", icon: <TrophyOutlined />, color: "#8B5CF6" },
     { title: "Study Hours", value: "—", icon: <ClockCircleOutlined />, color: "#EC4899" },
   ]);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const [attendanceRes, classesRes] = await Promise.all([
+          attendanceAPI.getMyAttendance(),
+          classAPI.getMyClasses()
+        ]);
+        
+        const attendanceList = attendanceRes.data || attendanceRes;
+        const classesList = classesRes.data || classesRes;
+        
+        let presentCount = 0;
+        let lateCount = 0;
+        const total = attendanceList.length;
+        
+        attendanceList.forEach(a => {
+          if (a.status === "present") presentCount++;
+          if (a.status === "late") lateCount++;
+        });
+
+        const attendanceRate = total > 0 ? Math.round(((presentCount + (lateCount * 0.5)) / total) * 100) : 0;
+        
+        setStats(prev => prev.map(stat => {
+          if (stat.title === "Attendance Rate") return { ...stat, value: `${attendanceRate}%` };
+          if (stat.title === "Enrolled Classes") return { ...stat, value: classesList.length };
+          return stat;
+        }));
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="dashboard-content">
