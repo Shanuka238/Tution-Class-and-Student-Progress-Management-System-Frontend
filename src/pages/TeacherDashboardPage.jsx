@@ -4,6 +4,7 @@ import TeacherDashboardOverview from "../components/TeacherDashboard/DashboardOv
 import ComingSoon from "../components/Common/ComingSoon";
 import ClassSection from "../components/ClassManagement/ClassSection";
 import AttendanceManager from "../components/Attendance/AttendanceManager";
+import ExamManagement from "../components/ExamManagement/ExamManagement";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -20,7 +21,7 @@ function TeacherDashboardPage() {
       case "attendance":
         return <AttendanceManager />;
       case "exams":
-        return <ComingSoon label="Exams & Results" />;
+        return <ExamManagement />;
       case "analytics":
         return <ComingSoon label="Performance Analytics" />;
         

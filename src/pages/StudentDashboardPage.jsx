@@ -4,6 +4,7 @@ import StudentDashboardOverview from "../components/StudentDashboard/DashboardOv
 import StudentAttendance from "../components/StudentDashboard/StudentAttendance";
 import ComingSoon from "../components/Common/ComingSoon";
 import WeeklyTimetable from "../components/ClassManagement/WeeklyTimetable";
+import StudentResults from "../components/ExamManagement/StudentResults";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -20,7 +21,7 @@ function StudentDashboardPage() {
       case "attendance":
         return <StudentAttendance />;
       case "exams":
-        return <ComingSoon label="View Exams & Results" />;
+        return <StudentResults />;
       case "analytics":
         return <ComingSoon label="My Performance" />;
       case "payments":
