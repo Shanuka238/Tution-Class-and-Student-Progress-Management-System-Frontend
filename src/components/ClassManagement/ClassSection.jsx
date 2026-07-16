@@ -9,7 +9,7 @@ const ClassSection = () => {
   const [activeTab, setActiveTab] = useState("manage");
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
-  const canManage = ["admin", "teacher"].includes(user.role);
+  const canManage = user.role === "admin";
 
   const items = [
     {
@@ -21,7 +21,6 @@ const ClassSection = () => {
         </span>
       ),
       children: <ClassList />,
-      disabled: !canManage,
     },
     {
       key: "timetable",

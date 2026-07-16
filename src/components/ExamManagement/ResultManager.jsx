@@ -25,7 +25,6 @@ const ResultManager = ({ exam, onBack, isDrawer = false, enrolledStudents = [] }
       if (enrolledStudents && enrolledStudents.length > 0) {
         setStudents(enrolledStudents);
       } else {
-        // Fallback to fetch if not provided as prop
         const classRes = await classAPI.getEnrolledStudents(exam.class_id);
         let enrolled = classRes.data || classRes;
         
@@ -35,7 +34,6 @@ const ResultManager = ({ exam, onBack, isDrawer = false, enrolledStudents = [] }
         setStudents(enrolled);
       }
 
-      // Fetch existing results for this exam
       const resultsRes = await examAPI.getResultsByExam(exam.exam_id);
       const existingResults = resultsRes.data || resultsRes;
       

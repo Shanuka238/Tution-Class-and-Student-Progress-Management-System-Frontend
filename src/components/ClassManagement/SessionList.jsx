@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Drawer, Table, Button, Space, Popconfirm, Tag, message } from "antd";
-import { CalendarOutlined, PlusOutlined, DeleteOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import { attendanceAPI } from "../../services/attendanceApi";
 import SessionModal from "./SessionModal";
@@ -13,7 +13,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
   const [markedMap, setMarkedMap] = useState({});
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
-  const canManage = ["admin", "teacher"].includes(user.role) && !hideManagement;
+  const canManage = user.role === "admin" && !hideManagement;
 
   const fetchSessions = useCallback(async () => {
     if (!course) return;

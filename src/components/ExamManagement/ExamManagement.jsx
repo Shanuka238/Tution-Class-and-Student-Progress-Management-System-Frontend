@@ -93,7 +93,14 @@ const ExamManagement = () => {
         <Button 
           type="primary" 
           icon={<FileTextOutlined />}
-          onClick={() => setManagingExam(record)}
+          onClick={() => {
+            const classObj = classes.find(c => c.class_id === selectedClass || c._id === selectedClass);
+            if (!classObj?.enrolled_students || classObj.enrolled_students.length === 0) {
+              message.warning("No students enrolled in this class. Enroll students first to manage results.");
+              return;
+            }
+            setManagingExam(record);
+          }}
         >
           Manage Results
         </Button>
