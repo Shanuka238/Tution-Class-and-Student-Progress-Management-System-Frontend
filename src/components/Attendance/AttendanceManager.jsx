@@ -42,15 +42,8 @@ const AttendanceManager = () => {
     try {
       const response = await classAPI.getActiveClasses();
       const allClasses = response.data || response;
-      const filtered = isAdmin
-        ? allClasses
-        : allClasses.filter(
-            (c) =>
-              String(c.teacher_id?._id || c.teacher_id) ===
-              String(currentUser.profile_id || currentUser._id)
-          );
-      setClasses(filtered);
-      return filtered;
+      setClasses(allClasses);
+      return allClasses;
     } catch (error) {
       message.error(error.message || "Failed to load class list");
       return [];

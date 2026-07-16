@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Card, Tag, Empty, message, theme, Spin, Row, Col, Button, Space, Segmented } from "antd";
 import { ClockCircleOutlined, UserOutlined, EnvironmentOutlined, BookOutlined, LeftOutlined, RightOutlined, ReloadOutlined } from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
+import { DAYS_OF_WEEK } from "../../enums/dateTime";
 
 const WeeklyTimetable = () => {
   const { token: themeToken } = theme.useToken();
@@ -9,8 +10,6 @@ const WeeklyTimetable = () => {
   const [loading, setLoading] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
   const [viewMode, setViewMode] = useState("current");
-
-  const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   const getWeekDates = useCallback(() => {
     const today = new Date();

@@ -1,18 +1,7 @@
 import React from "react";
 import { Table, Tag, theme } from "antd";
 import dayjs from "dayjs";
-
-const STATUS_LABELS = {
-  present: "P",
-  absent: "A",
-  late: "L",
-};
-
-const STATUS_COLORS = {
-  present: "success",
-  absent: "error",
-  late: "warning",
-};
+import { STATUS_LABELS, STATUS_COLORS } from "../../enums/attendanceStatus";
 
 const AttendanceRegister = ({ students, sessions, attendanceRecords }) => {
   const { token: themeToken } = theme.useToken();

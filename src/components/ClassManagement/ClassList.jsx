@@ -20,7 +20,8 @@ const ClassList = () => {
   const [selectedCourseForSessions, setSelectedCourseForSessions] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
-  const canManage = ["admin", "teacher"].includes(user.role);
+  const canManage = user.role === "admin";
+  const canEnroll = ["admin", "teacher"].includes(user.role);
 
   const fetchClasses = useCallback(async () => {
     setLoading(true);
@@ -120,13 +121,15 @@ const ClassList = () => {
       key: "actions",
       render: (_, record) => (
         <Space size="small">
-          <Button
-            type="primary"
-            size="small"
-            onClick={() => handleEnrollStudents(record)}
-          >
-            Enroll Students
-          </Button>
+          {canEnroll && (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => handleEnrollStudents(record)}
+            >
+              Enroll Students
+            </Button>
+          )}
           <Button
             size="small"
             icon={<CalendarOutlined />}
@@ -197,7 +200,7 @@ const ClassList = () => {
                       title: "Action",
                       key: "action",
                       render: (_, student) => (
-                        canManage && (
+                        canEnroll && (
                           <Popconfirm
                             title="Remove Student"
                             description={`Are you sure you want to remove ${student.name} from this class?`}

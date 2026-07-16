@@ -1,10 +1,5 @@
 import { Table, Tag, Spin, theme } from "antd";
-
-const STATUS_COLORS = {
-  present: "success",
-  absent: "error",
-  late: "warning",
-};
+import { STATUS_COLORS } from "../../enums/attendanceStatus";
 
 const AttendanceExpandedRow = ({ logs }) => {
   const { token: themeToken } = theme.useToken();
