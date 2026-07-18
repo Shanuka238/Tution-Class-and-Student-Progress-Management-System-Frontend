@@ -7,6 +7,7 @@ import { NAV_CONFIG } from "../enums/navConfig";
 import ClassSection from "../components/ClassManagement/ClassSection";
 import AttendanceManager from "../components/Attendance/AttendanceManager";
 import ExamManagement from "../components/ExamManagement/ExamManagement";
+import FeeManagement from "../components/FeeManagement/FeeManagement";
 import "../styles/Dashboard.css";
 
 function AdminDashboardPage() {
@@ -29,7 +30,7 @@ function AdminDashboardPage() {
       case "analytics":
         return <ComingSoon label="Performance Analytics" />;
       case "payments":
-        return <ComingSoon label="Payment Management" />;
+        return <FeeManagement />;
         
       default:
         return <AdminDashboardOverview />;
