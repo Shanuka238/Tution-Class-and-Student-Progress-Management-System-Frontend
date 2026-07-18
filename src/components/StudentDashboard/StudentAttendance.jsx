@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Tag, Card, Typography, Spin, message, Row, Col, Statistic } from "antd";
+import { Table, Tag, Card, Typography, Spin, message, Row, Col, Statistic, theme } from "antd";
 import { attendanceAPI } from "../../services/attendanceApi";
 import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
@@ -7,6 +7,7 @@ import dayjs from "dayjs";
 const { Title, Text } = Typography;
 
 const StudentAttendance = () => {
+  const { token: themeToken } = theme.useToken();
   const [attendance, setAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -83,9 +84,9 @@ const StudentAttendance = () => {
 
       <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
         <Col xs={24} sm={8}>
-          <Card bordered={false} style={{ borderRadius: "12px", background: "#f0fdf4" }}>
+          <Card bordered={false} style={{ borderRadius: "12px", background: "rgba(22, 163, 74, 0.1)", border: "1px solid rgba(22, 163, 74, 0.2)" }}>
             <Statistic
-              title="Attendance Rate"
+              title={<span style={{ color: themeToken.colorTextDescription }}>Attendance Rate</span>}
               value={attendanceRate}
               suffix="%"
               valueStyle={{ color: "#16a34a", fontWeight: "bold" }}
@@ -93,9 +94,9 @@ const StudentAttendance = () => {
           </Card>
         </Col>
         <Col xs={12} sm={8}>
-          <Card bordered={false} style={{ borderRadius: "12px", background: "#eff6ff" }}>
+          <Card bordered={false} style={{ borderRadius: "12px", background: "rgba(37, 99, 235, 0.1)", border: "1px solid rgba(37, 99, 235, 0.2)" }}>
             <Statistic
-              title="Classes Attended"
+              title={<span style={{ color: themeToken.colorTextDescription }}>Classes Attended</span>}
               value={presentCount}
               suffix={`/ ${total}`}
               valueStyle={{ color: "#2563eb", fontWeight: "bold" }}
@@ -103,9 +104,9 @@ const StudentAttendance = () => {
           </Card>
         </Col>
         <Col xs={12} sm={8}>
-          <Card bordered={false} style={{ borderRadius: "12px", background: "#fef2f2" }}>
+          <Card bordered={false} style={{ borderRadius: "12px", background: "rgba(220, 38, 38, 0.1)", border: "1px solid rgba(220, 38, 38, 0.2)" }}>
             <Statistic
-              title="Missed Classes"
+              title={<span style={{ color: themeToken.colorTextDescription }}>Missed Classes</span>}
               value={total - presentCount - lateCount}
               valueStyle={{ color: "#dc2626", fontWeight: "bold" }}
             />

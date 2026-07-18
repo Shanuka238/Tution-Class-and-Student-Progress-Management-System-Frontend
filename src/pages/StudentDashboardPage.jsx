@@ -5,6 +5,7 @@ import StudentAttendance from "../components/StudentDashboard/StudentAttendance"
 import ComingSoon from "../components/Common/ComingSoon";
 import WeeklyTimetable from "../components/ClassManagement/WeeklyTimetable";
 import StudentResults from "../components/ExamManagement/StudentResults";
+import StudentPayments from "../components/StudentDashboard/StudentPayments";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -25,7 +26,7 @@ function StudentDashboardPage() {
       case "analytics":
         return <ComingSoon label="My Performance" />;
       case "payments":
-        return <ComingSoon label="Payments" />;
+        return <StudentPayments />;
         
       default:
         return <StudentDashboardOverview />;
