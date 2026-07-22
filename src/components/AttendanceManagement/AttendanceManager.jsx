@@ -165,6 +165,7 @@ const AttendanceManager = () => {
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
         activeClass={activeClass}
+        activeSession={activeSession}
         targetDate={activeSession ? dayjs(activeSession.date) : null}
         isMarked={activeSessionIsMarked}
         roster={roster}

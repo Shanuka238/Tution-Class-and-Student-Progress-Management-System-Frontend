@@ -5,6 +5,7 @@ import { classAPI } from "../../services/classApi";
 import ClassModal from "./ClassModal";
 import EnrollDrawer from "./EnrollDrawer";
 import SessionList from "./SessionList";
+import dayjs from "dayjs";
 
 const { Title } = Typography;
 
@@ -89,11 +90,12 @@ const ClassList = () => {
       ),
     },
     {
-      title: "Room/Venue",
-      key: "schedule",
+      title: "Active Dates",
+      key: "active_dates",
       render: (_, record) => (
-        <div>
-          <Tag color="blue">{record.venue}</Tag>
+        <div style={{ fontSize: "13px" }}>
+          <div>Start: {record.start_date ? dayjs(record.start_date).format("MMM DD, YYYY") : "N/A"}</div>
+          <div style={{ color: themeToken.colorTextSecondary }}>End: {record.end_date ? dayjs(record.end_date).format("MMM DD, YYYY") : "N/A"}</div>
         </div>
       ),
     },

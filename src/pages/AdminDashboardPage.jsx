@@ -5,7 +5,7 @@ import UserTable from "../components/UserManagement/UserTable";
 import ComingSoon from "../components/Common/ComingSoon";
 import { NAV_CONFIG } from "../enums/navConfig";
 import ClassSection from "../components/ClassManagement/ClassSection";
-import AttendanceManager from "../components/Attendance/AttendanceManager";
+import AttendanceManager from "../components/AttendanceManagement/AttendanceManager";
 import ExamManagement from "../components/ExamManagement/ExamManagement";
 import FeeManagement from "../components/FeeManagement/FeeManagement";
 import "../styles/Dashboard.css";
