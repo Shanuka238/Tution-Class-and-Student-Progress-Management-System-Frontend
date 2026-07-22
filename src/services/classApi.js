@@ -53,10 +53,10 @@ export const classAPI = {
     return await apiRequest(`${API_URLS.CLASSES}/${classId}/sessions`);
   },
 
-  async createSession(classId, date, startTime, endTime, teacherId) {
+  async createSession(classId, date, startTime, endTime, teacherId, venue) {
     return await apiRequest(`${API_URLS.CLASSES}/${classId}/sessions`, {
       method: "POST",
-      body: { date, start_time: startTime, end_time: endTime, teacher_id: teacherId },
+      body: { date, start_time: startTime, end_time: endTime, teacher_id: teacherId, venue },
     });
   },
 

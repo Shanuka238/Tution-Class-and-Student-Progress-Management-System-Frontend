@@ -73,6 +73,12 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
       render: (_, record) => `${record.start_time || "N/A"} - ${record.end_time || "N/A"}`,
     },
     {
+      title: "Room/Venue",
+      dataIndex: "venue",
+      key: "venue",
+      render: (venue) => <Tag color="blue">{venue || "N/A"}</Tag>,
+    },
+    {
       title: "Teacher",
       key: "teacher",
       render: (_, record) => {
@@ -142,7 +148,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
   return (
     <Drawer
       title={`Sessions Directory — ${course?.class_name}`}
-      width={700}
+      width={850}
       onClose={onClose}
       open={visible}
       destroyOnClose
@@ -164,6 +170,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
         rowKey="_id"
         loading={loading}
         pagination={{ pageSize: 8 }}
+        scroll={{ x: "max-content" }}
       />
 
       <SessionModal

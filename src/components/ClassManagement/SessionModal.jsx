@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, DatePicker, TimePicker, Select, message } from "antd";
+import { Modal, Form, DatePicker, TimePicker, Select, Input, message } from "antd";
 import { classAPI } from "../../services/classApi";
 import { adminAPI } from "../../services/adminApi";
 import dayjs from "dayjs";
@@ -36,7 +36,8 @@ const SessionModal = ({ visible, onCancel, onSuccess, courseId, courseName }) =>
       const startTime = values.start_time.format("HH:mm");
       const endTime = values.end_time.format("HH:mm");
       const teacherId = values.teacher_id;
-      await classAPI.createSession(courseId, dateStr, startTime, endTime, teacherId);
+      const venue = values.venue;
+      await classAPI.createSession(courseId, dateStr, startTime, endTime, teacherId, venue);
       message.success("Session scheduled successfully!");
       form.resetFields();
       onSuccess();
@@ -74,6 +75,13 @@ const SessionModal = ({ visible, onCancel, onSuccess, courseId, courseName }) =>
           rules={[{ required: true, message: "Please select a session date" }]}
         >
           <DatePicker style={{ width: "100%" }} />
+        </Form.Item>
+        <Form.Item
+          name="venue"
+          label="Room/Venue"
+          rules={[{ required: true, message: "Please specify the venue/classroom hall location" }]}
+        >
+          <Input placeholder="e.g. Hall A, Auditorium 2" />
         </Form.Item>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
           <Form.Item

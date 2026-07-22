@@ -4,6 +4,7 @@ import { ArrowLeftOutlined, UserAddOutlined, DeleteOutlined, CalendarOutlined, E
 import { adminAPI } from "../../services/adminApi";
 import { classAPI } from "../../services/classApi";
 import EnrollDrawer from "./EnrollDrawer";
+import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
@@ -13,41 +14,33 @@ const ClassDetails = ({ classId, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  const loadRosterDetails = useCallback(async () => {
+  const fetchClassRosterDetails = useCallback(async () => {
     setLoading(true);
     try {
-      const classesResponse = await classAPI.getActiveClasses();
-      const classesData = classesResponse.data || classesResponse;
-      const match = classesData.find(c => c._id === classId);
+      const classRes = await classAPI.getActiveClasses();
+      const list = classRes.data || classRes;
+      const match = list.find(item => item._id === classId || item.class_id === classId);
       setClassInfo(match);
 
-      const usersResponse = await adminAPI.getAllUsers();
-      const usersData = usersResponse.data || usersResponse;
-      
-      const studentsInClass = usersData.filter(item => {
-        return item.user?.role === "student" && 
-               Array.isArray(item.profile?.classes) && 
-               item.profile.classes.includes(classId);
-      });
-
-      setRoster(studentsInClass);
+      const rosterRes = await classAPI.getClassEnrollments(classId);
+      setRoster(rosterRes.data || rosterRes);
     } catch (err) {
-      console.error("Error loading roster:", err);
-      message.error("Failed to compile roster listings");
+      console.error("Error fetching class roster:", err);
+      message.error("Failed to fetch class roster details");
     } finally {
       setLoading(false);
     }
   }, [classId]);
 
   useEffect(() => {
-    if (classId) loadRosterDetails();
-  }, [classId, loadRosterDetails]);
+    fetchClassRosterDetails();
+  }, [fetchClassRosterDetails]);
 
   const handleDropStudent = async (studentId) => {
     try {
       await classAPI.dropStudent(studentId, classId);
-      message.success("Student dropped from class listing roster successfully");
-      loadRosterDetails(); // Trigger re-sync
+      message.success("Student dropped from class successfully!");
+      fetchClassRosterDetails();
     } catch (err) {
       message.error(err.message || "Failed to drop student");
     }
@@ -55,31 +48,34 @@ const ClassDetails = ({ classId, onBack }) => {
 
   const columns = [
     {
-      title: "Student Reg ID",
-      dataIndex: ["profile", "student_number"],
+      title: "Student Number",
+      dataIndex: ["student_id", "student_number"],
       key: "student_number",
+      render: (num) => <Text strong>{num || "N/A"}</Text>,
     },
     {
-      title: "Student Name",
+      title: "Name",
       key: "name",
-      render: (_, record) => `${record.user?.first_name || ""} ${record.user?.last_name || ""}`,
+      render: (_, record) => {
+        const userObj = record.student_id?.user_id || {};
+        return `${userObj.first_name || ""} ${userObj.last_name || ""}`;
+      },
     },
     {
-      title: "Contact Number",
-      dataIndex: ["user", "phone"],
-      key: "phone",
-      render: (phone) => phone || <Text type="secondary">—</Text>,
+      title: "Email",
+      dataIndex: ["student_id", "user_id", "email"],
+      key: "email",
     },
     {
       title: "Actions",
       key: "actions",
       render: (_, record) => (
         <Popconfirm
-          title="Remove Student from Roster?"
-          description="Are you sure you want to drop this student from this class layout partition?"
+          title="Drop Student"
+          description="Are you sure you want to drop this student from the class roster?"
           okText="Yes, Drop"
           okType="danger"
-          onOk={() => handleDropStudent(record.profile?._id)}
+          onOk={() => handleDropStudent(record.student_id?._id || record.student_id?.id || record.profile?._id)}
         >
           <Button type="text" danger icon={<DeleteOutlined />} />
         </Popconfirm>
@@ -104,8 +100,7 @@ const ClassDetails = ({ classId, onBack }) => {
             <Text type="secondary" style={{ fontSize: "16px" }}>Subject Domain: {classInfo.subject}</Text>
             
             <div style={{ marginTop: "16px", display: "flex", gap: "24px", color: "var(--color-text)" }}>
-              <span><CalendarOutlined /> {classInfo.schedule_days} ({classInfo.schedule_start_time} - {classInfo.schedule_end_time})</span>
-              <span><EnvironmentOutlined /> Venue: <Text strong>{classInfo.venue}</Text></span>
+              <span><CalendarOutlined /> Dates: <Text strong>{classInfo.start_date ? dayjs(classInfo.start_date).format("MMM DD, YYYY") : "N/A"} - {classInfo.end_date ? dayjs(classInfo.end_date).format("MMM DD, YYYY") : "N/A"}</Text></span>
             </div>
           </div>
           

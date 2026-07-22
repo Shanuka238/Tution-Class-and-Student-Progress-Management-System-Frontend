@@ -5,6 +5,7 @@ const AttendanceMarkingDrawer = ({
   visible,
   onClose,
   activeClass,
+  activeSession,
   targetDate,
   isMarked,
   roster,
@@ -74,11 +75,11 @@ const AttendanceMarkingDrawer = ({
               color: themeToken.colorTextSecondary,
             }}
           >
-            {targetDate?.format("DD MMMM YYYY")} | {activeClass?.venue}
+            {targetDate?.format("DD MMMM YYYY")} | {activeSession?.venue}
           </div>
         </div>
       }
-      width={580}
+      width={650}
       onClose={onClose}
       open={visible}
       destroyOnClose
@@ -101,6 +102,7 @@ const AttendanceMarkingDrawer = ({
         loading={loading}
         pagination={false}
         size="middle"
+        scroll={{ x: "max-content" }}
         locale={{ emptyText: "No students matched to this grade" }}
       />
     </Drawer>

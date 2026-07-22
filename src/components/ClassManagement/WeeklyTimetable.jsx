@@ -417,7 +417,7 @@ const WeeklyTimetable = () => {
                             color: themeToken.colorTextSecondary
                           }}>
                             <EnvironmentOutlined style={{ fontSize: "12px" }} />
-                            {course.venue}
+                            {cls.venue || course.venue}
                           </div>
                         </div>
                       );

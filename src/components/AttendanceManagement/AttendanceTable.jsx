@@ -1,5 +1,6 @@
 import { Table, Button, Tag, Space, theme } from "antd";
-import { CalendarOutlined,BookOutlined } from "@ant-design/icons";
+import { CalendarOutlined, BookOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 
 const AttendanceTable = ({
   classes,
@@ -25,11 +26,12 @@ const AttendanceTable = ({
       ),
     },
     {
-      title: "Room/Venue",
-      key: "schedule",
+      title: "Active Dates",
+      key: "active_dates",
       render: (_, record) => (
-        <div>
-          <Tag color="blue">{record.venue}</Tag>
+        <div style={{ fontSize: "13px" }}>
+          <div>Start: {record.start_date ? dayjs(record.start_date).format("MMM DD, YYYY") : "N/A"}</div>
+          <div style={{ color: themeToken.colorTextSecondary }}>End: {record.end_date ? dayjs(record.end_date).format("MMM DD, YYYY") : "N/A"}</div>
         </div>
       ),
     },

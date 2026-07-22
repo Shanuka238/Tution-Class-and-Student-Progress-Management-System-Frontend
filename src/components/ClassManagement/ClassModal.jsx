@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Form, Input, Select, InputNumber, message } from "antd";
+import { Modal, Form, Input, Select, InputNumber, DatePicker, message } from "antd";
 import { classAPI } from "../../services/classApi";
 import { adminAPI } from "../../services/adminApi";
 
@@ -32,7 +32,12 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
   const onFinish = async (values) => {
     setSubmitting(true);
     try {
-      await classAPI.createClass(values);
+      const payload = {
+        ...values,
+        start_date: values.start_date ? values.start_date.format("YYYY-MM-DD") : null,
+        end_date: values.end_date ? values.end_date.format("YYYY-MM-DD") : null,
+      };
+      await classAPI.createClass(payload);
       message.success("Tuition class mapped and added successfully!");
       onSuccess();
     } catch (error) {
@@ -71,14 +76,21 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
               <Option value="10">10</Option>
               <Option value="11">11</Option>
               <Option value="12">12</Option>
+              <Option value="13">13</Option>
             </Select>
           </Form.Item>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "16px" }}>
-          <Form.Item name="venue" label="Classroom Location/Hall Room" rules={[{ required: true }]}>
-            <Input placeholder="e.g. Hall A, Auditorium 2" />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <Form.Item name="start_date" label="Start Date" rules={[{ required: true, message: "Please select a start date" }]}>
+            <DatePicker style={{ width: "100%" }} />
           </Form.Item>
+          <Form.Item name="end_date" label="End Date" rules={[{ required: true, message: "Please select an end date" }]}>
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "16px" }}>
           <Form.Item name="max_students" label="Max Seats Limit" rules={[{ required: true }]}>
             <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
