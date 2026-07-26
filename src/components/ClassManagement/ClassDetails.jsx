@@ -14,6 +14,9 @@ const ClassDetails = ({ classId, onBack }) => {
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
+  const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
+  const canManage = user.role === "admin";
+
   const fetchClassRosterDetails = useCallback(async () => {
     setLoading(true);
     try {
@@ -66,21 +69,31 @@ const ClassDetails = ({ classId, onBack }) => {
       dataIndex: ["student_id", "user_id", "email"],
       key: "email",
     },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (_, record) => (
-        <Popconfirm
-          title="Drop Student"
-          description="Are you sure you want to drop this student from the class roster?"
-          okText="Yes, Drop"
-          okType="danger"
-          onOk={() => handleDropStudent(record.student_id?._id || record.student_id?.id || record.profile?._id)}
-        >
-          <Button type="text" danger icon={<DeleteOutlined />} />
-        </Popconfirm>
-      ),
-    },
+    ...(canManage
+      ? [
+          {
+            title: "Actions",
+            key: "actions",
+            render: (_, record) => (
+              <Popconfirm
+                title="Drop Student"
+                description="Are you sure you want to drop this student from the class roster?"
+                okText="Yes, Drop"
+                okType="danger"
+                onOk={() =>
+                  handleDropStudent(
+                    record.student_id?._id ||
+                      record.student_id?.id ||
+                      record.profile?._id
+                  )
+                }
+              >
+                <Button type="text" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            ),
+          },
+        ]
+      : []),
   ];
 
   if (!classInfo) return <Card loading={true} />;
@@ -109,13 +122,15 @@ const ClassDetails = ({ classId, onBack }) => {
             <Title level={4} style={{ margin: "4px 0 16px 0" }}>
               {teacherUser ? `${teacherUser.first_name} ${teacherUser.last_name}` : "Unassigned"}
             </Title>
-            <Button 
-              type="primary" 
-              icon={<UserAddOutlined />} 
-              onClick={() => setDrawerVisible(true)}
-            >
-              Enroll Students
-            </Button>
+            {canManage && (
+              <Button 
+                type="primary" 
+                icon={<UserAddOutlined />} 
+                onClick={() => setDrawerVisible(true)}
+              >
+                Enroll Students
+              </Button>
+            )}
           </div>
         </div>
       </Card>
