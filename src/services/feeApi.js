@@ -1,40 +1,39 @@
 import apiRequest from "./api.js";
-
-const FEE_API_URL = "/fees";
+import { API_URLS } from "./apiUrls";
 
 export const feeAPI = {
   generateMonthlyFees: async (feeData) => {
-    return await apiRequest(`${FEE_API_URL}`, { method: "POST", body: feeData });
+    return await apiRequest(`${API_URLS.FEES}`, { method: "POST", body: feeData });
   },
 
   getAllFees: async (filters = {}) => {
     const params = new URLSearchParams(filters).toString();
-    return await apiRequest(`${FEE_API_URL}${params ? `?${params}` : ""}`);
+    return await apiRequest(`${API_URLS.FEES}${params ? `?${params}` : ""}`);
   },
 
   getFinancialStats: async (filters = {}) => {
     const params = new URLSearchParams(filters).toString();
-    return await apiRequest(`${FEE_API_URL}/stats${params ? `?${params}` : ""}`);
+    return await apiRequest(`${API_URLS.FEES}/stats${params ? `?${params}` : ""}`);
   },
 
   markAsPaid: async (feeId) => {
-    return await apiRequest(`${FEE_API_URL}/${feeId}/pay-cash`, { method: "POST" });
+    return await apiRequest(`${API_URLS.FEES}/${feeId}/pay-cash`, { method: "POST" });
   },
 
   sendOverdueReminders: async () => {
-    return await apiRequest(`${FEE_API_URL}/remind-overdue`, { method: "POST" });
+    return await apiRequest(`${API_URLS.FEES}/remind-overdue`, { method: "POST" });
   },
 
   getMyFees: async () => {
-    return await apiRequest(`${FEE_API_URL}/me`);
+    return await apiRequest(`${API_URLS.FEES}/me`);
   },
 
   initiatePayHere: async (feeId) => {
-    return await apiRequest(`${FEE_API_URL}/${feeId}/initiate-payhere`, { method: "POST" });
+    return await apiRequest(`${API_URLS.FEES}/${feeId}/initiate-payhere`, { method: "POST" });
   },
 
   mockPayHereSuccess: async (feeId) => {
-    return await apiRequest(`${FEE_API_URL}/${feeId}/mock-payhere-success`, { method: "POST" });
+    return await apiRequest(`${API_URLS.FEES}/${feeId}/mock-payhere-success`, { method: "POST" });
   },
 };
 export default feeAPI;

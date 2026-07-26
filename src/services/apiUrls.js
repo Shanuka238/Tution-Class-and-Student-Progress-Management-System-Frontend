@@ -10,5 +10,7 @@ export const API_URLS = {
   },
   CLASSES: "/classes",
   ATTENDANCE: "/attendance",
+  FEES: "/fees",
+  EXAMS: "/exams",
   HEALTH: "/health",
 };

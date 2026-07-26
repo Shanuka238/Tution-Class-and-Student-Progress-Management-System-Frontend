@@ -101,7 +101,7 @@ const WeeklyTimetable = () => {
   };
 
   const getClassesForDay = (dayIndex) => {
-    return classes
+    return (classes || [])
       .filter(cls => {
         if (!cls.date) return false;
         const classDate = new Date(cls.date);
@@ -142,32 +142,10 @@ const WeeklyTimetable = () => {
     setWeekOffset(0);
   };
 
-  if (loading && classes.length === 0) {
-    return (
-      <Card style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <Spin size="large" />
-        </div>
-      </Card>
-    );
-  }
-
-  if (!classes || classes.length === 0) {
-    return (
-      <Card style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-        <Empty
-          description="No classes scheduled"
-          style={{ padding: "60px 20px" }}
-        />
-      </Card>
-    );
-  }
-
-  const hasClassesThisWeek = DAYS_OF_WEEK.some((_, idx) => getClassesForDay(idx).length > 0);
+  const hasClassesThisWeek = (classes || []).length > 0 && DAYS_OF_WEEK.some((_, idx) => getClassesForDay(idx).length > 0);
 
   return (
     <div style={{ width: "100%" }}>
-      {/* Header */}
       <div style={{
         marginBottom: "24px",
         paddingBottom: "16px",
@@ -182,7 +160,6 @@ const WeeklyTimetable = () => {
           Weekly Timetable
         </h2>
 
-        {/* Controls */}
         <Space direction="vertical" style={{ width: "100%" }} size="middle">
           {/* Week Navigation */}
           <Space size="large" wrap>
@@ -224,7 +201,6 @@ const WeeklyTimetable = () => {
             </Tag>
           </Space>
 
-          {/* View Mode Toggle */}
           <Space size="middle" wrap>
             <span style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>View:</span>
             <Segmented
@@ -239,7 +215,6 @@ const WeeklyTimetable = () => {
             />
           </Space>
 
-          {/* Info */}
           <div style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>
             {hasClassesThisWeek ? (
               <span>✓ Classes found for this week • Total: {classes.length} classes</span>
@@ -250,7 +225,6 @@ const WeeklyTimetable = () => {
         </Space>
       </div>
 
-      {/* Timetable */}
       <Row gutter={[16, 16]}>
         {DAYS_OF_WEEK.map((day, index) => {
           const dayData = getDayWithDate(index);
@@ -259,7 +233,6 @@ const WeeklyTimetable = () => {
           const isWeekend = dayIndex >= 5;
           const isWeekday = dayIndex < 5;
 
-          // Filter based on view mode
           let shouldShow = true;
           if (viewMode === "weekdays" && isWeekend) shouldShow = false;
           if (viewMode === "weekends" && isWeekday) shouldShow = false;
@@ -328,7 +301,6 @@ const WeeklyTimetable = () => {
                             e.currentTarget.style.boxShadow = "none";
                           }}
                         >
-                          {/* Grade Badge */}
                           <div style={{
                             position: "absolute",
                             top: "0",
@@ -343,7 +315,6 @@ const WeeklyTimetable = () => {
                             Grade {course.grade}
                           </div>
 
-                          {/* Class Name and Subject */}
                           <div style={{ marginBottom: "10px", marginTop: "2px" }}>
                             <div style={{
                               fontSize: "15px",
@@ -365,14 +336,12 @@ const WeeklyTimetable = () => {
                             </div>
                           </div>
 
-                          {/* Divider */}
                           <div style={{
                             height: "1px",
                             background: `${borderColor}30`,
                             marginBottom: "10px"
                           }} />
 
-                          {/* Time & Status */}
                           <div style={{
                             display: "flex",
                             justifyContent: "space-between",
@@ -395,7 +364,6 @@ const WeeklyTimetable = () => {
                             )}
                           </div>
 
-                          {/* Teacher */}
                           <div style={{
                             fontSize: "12px",
                             marginBottom: "6px",
@@ -408,7 +376,6 @@ const WeeklyTimetable = () => {
                             {teacher ? `${teacher.first_name} ${teacher.last_name}` : "Unassigned"}
                           </div>
 
-                          {/* Venue */}
                           <div style={{
                             fontSize: "12px",
                             display: "flex",

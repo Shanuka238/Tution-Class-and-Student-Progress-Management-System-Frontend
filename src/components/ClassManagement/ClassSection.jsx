@@ -6,33 +6,40 @@ import WeeklyTimetable from "./WeeklyTimetable";
 
 const ClassSection = () => {
   const { token: themeToken } = theme.useToken();
-  const [activeTab, setActiveTab] = useState("manage");
-
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
-  const canManage = user.role === "admin";
+  const isTeacher = user.role === "teacher";
 
-  const items = [
-    {
-      key: "manage",
-      label: (
-        <span>
-          <BookOutlined />
-          Manage Classes
-        </span>
-      ),
-      children: <ClassList />,
-    },
-    {
-      key: "timetable",
-      label: (
-        <span>
-          <CalendarOutlined />
-          Weekly Timetable
-        </span>
-      ),
-      children: <WeeklyTimetable />,
-    },
-  ];
+  const [activeTab, setActiveTab] = useState(isTeacher ? "timetable" : "manage");
+
+  const items = isTeacher
+    ? [
+        {
+          key: "timetable",
+          label: "Weekly Timetable",
+          icon: <CalendarOutlined />,
+          children: <WeeklyTimetable />,
+        },
+        {
+          key: "manage",
+          label: "My Classes & Rosters",
+          icon: <BookOutlined />,
+          children: <ClassList />,
+        },
+      ]
+    : [
+        {
+          key: "manage",
+          label: "Manage Classes",
+          icon: <BookOutlined />,
+          children: <ClassList />,
+        },
+        {
+          key: "timetable",
+          label: "Weekly Timetable",
+          icon: <CalendarOutlined />,
+          children: <WeeklyTimetable />,
+        },
+      ];
 
   return (
     <div style={{

@@ -22,7 +22,7 @@ const ClassList = () => {
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
   const canManage = user.role === "admin";
-  const canEnroll = ["admin", "teacher"].includes(user.role);
+  const canEnroll = user.role === "admin";
 
   const fetchClasses = useCallback(async () => {
     setLoading(true);
