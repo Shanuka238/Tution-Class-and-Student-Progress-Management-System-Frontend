@@ -4,6 +4,7 @@ import { feeAPI } from "../../services/feeApi";
 import PaymentStatsCards from "./PaymentStatsCards";
 import PaymentTable from "./PaymentTable";
 import dayjs from "dayjs";
+import { launchPayHereCheckout } from "../../utils/paymentUtils";
 
 const { Title, Text } = Typography;
 
@@ -39,7 +40,7 @@ const StudentPayments = () => {
           message.success("Online payment verified successfully!");
           fetchStudentFees();
         } catch (err) {
-          console.error("Local webhook simulation failure:", err);
+          console.error("Payment synchronization failure:", err);
           message.error("Failed to automatically synchronize payment record");
         }
       };
@@ -50,55 +51,13 @@ const StudentPayments = () => {
     }
   }, [fetchStudentFees]);
 
-  const handleRealPayHereRedirect = (params) => {
-    if (!params) return;
-    
-    const isSandbox = params.is_sandbox;
-    const gatewayUrl = isSandbox
-      ? "https://sandbox.payhere.lk/pay/checkout"
-      : "https://www.payhere.lk/pay/checkout";
-
-    const form = document.createElement("form");
-    form.setAttribute("method", "post");
-    form.setAttribute("action", gatewayUrl);
-    
-    const skipKeys = ["fee_id", "is_sandbox"];
-    Object.keys(params).forEach(key => {
-      if (skipKeys.includes(key)) return;
-      const input = document.createElement("input");
-      input.setAttribute("type", "hidden");
-      input.setAttribute("name", key);
-      input.setAttribute("value", params[key]);
-      form.appendChild(input);
-    });
-    
-    const extraParams = {
-      phone: "0771234567",
-      address: "No. 12, Main Street",
-      city: "Colombo",
-      country: "Sri Lanka"
-    };
-
-    Object.keys(extraParams).forEach(key => {
-      const input = document.createElement("input");
-      input.setAttribute("type", "hidden");
-      input.setAttribute("name", key);
-      input.setAttribute("value", extraParams[key]);
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-  };
-
   const handleInitiatePayHere = async (feeRecord) => {
     try {
-      const res = await feeAPI.initiatePayHere(feeRecord.fee_id || feeRecord._id || feeRecord.id);
-      const params = res.data || res;
-      handleRealPayHereRedirect(params);
+      const res = await feeAPI.initiatePayHere(feeRecord._id);
+      launchPayHereCheckout(res.data || res);
     } catch (err) {
-      message.error(err.message || "Failed to initiate online PayHere transaction");
+      console.error("Error launching PayHere gateway:", err);
+      message.error(err.message || "Failed to initiate online checkout");
     }
   };
 

@@ -1,3 +1,9 @@
+export const ATTENDANCE_STATUS = Object.freeze({
+  PRESENT: "present",
+  ABSENT: "absent",
+  LATE: "late",
+});
+
 export const STATUS_LABELS = Object.freeze({
   present: "P",
   absent: "A",

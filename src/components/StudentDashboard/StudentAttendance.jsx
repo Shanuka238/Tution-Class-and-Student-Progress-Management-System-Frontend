@@ -6,12 +6,18 @@ import dayjs from "dayjs";
 
 const { Title, Text } = Typography;
 
-const StudentAttendance = () => {
+const StudentAttendance = ({ attendance: propAttendance, loading: propLoading }) => {
   const { token: themeToken } = theme.useToken();
-  const [attendance, setAttendance] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [attendance, setAttendance] = useState(propAttendance || []);
+  const [loading, setLoading] = useState(propLoading !== undefined ? propLoading : true);
 
   useEffect(() => {
+    if (propAttendance !== undefined) {
+      setAttendance(propAttendance);
+      if (propLoading !== undefined) setLoading(propLoading);
+      return;
+    }
+
     const fetchAttendance = async () => {
       try {
         const res = await attendanceAPI.getMyAttendance();
@@ -25,7 +31,7 @@ const StudentAttendance = () => {
       }
     };
     fetchAttendance();
-  }, []);
+  }, [propAttendance, propLoading]);
 
   const columns = [
     {

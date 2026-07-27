@@ -9,21 +9,51 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
   const [form] = Form.useForm();
   const [selectedRole, setSelectedRole] = useState("student");
   const [submitting, setSubmitting] = useState(false);
+  const [parentsList, setParentsList] = useState([]);
+  const [loadingParents, setLoadingParents] = useState(false);
 
   useEffect(() => {
     if (visible) {
+      // Fetch registered parent accounts for parent dropdown assignment
+      const fetchParents = async () => {
+        setLoadingParents(true);
+        try {
+          const res = await adminAPI.getAllUsers();
+          const list = res.data || res;
+          if (Array.isArray(list)) {
+            const parents = list.filter(
+              (u) => u.user?.role === "parent" && u.profile
+            );
+            setParentsList(parents);
+          }
+        } catch (err) {
+          console.error("Error fetching parents for dropdown:", err);
+        } finally {
+          setLoadingParents(false);
+        }
+      };
+
+      fetchParents();
+
       if (editingUser) {
         const baseUser = editingUser.user || {};
         const profile = editingUser.profile || {};
-        
+
         setSelectedRole(baseUser.role);
-        
+
+        const parentIdValue = profile.parent_id
+          ? typeof profile.parent_id === "object"
+            ? profile.parent_id._id || profile.parent_id.id
+            : profile.parent_id
+          : undefined;
+
         form.setFieldsValue({
           first_name: baseUser.first_name,
           last_name: baseUser.last_name,
           email: baseUser.email,
           phone: baseUser.phone,
           role: baseUser.role,
+          parent_id: parentIdValue,
           grade: profile.grade,
           address: profile.address,
           subjects: profile.subjects,
@@ -45,17 +75,17 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
     try {
       if (editingUser) {
         const id = editingUser.user._id || editingUser.user.user_id;
-        const { role, ...updatePayload } = values; 
+        const { role, ...updatePayload } = values;
 
         await adminAPI.updateUser(id, updatePayload);
-        message.success("User record updated successfully");
+        message.success("User account and profile updated successfully");
       } else {
         await adminAPI.createUser(values);
-        message.success("User profile initialized successfully");
+        message.success("User account initialized successfully");
       }
       onSuccess();
     } catch (error) {
-      message.error(error.message || "Failed to process form changes");
+      message.error(error.message || "Failed to process user form");
     } finally {
       setSubmitting(false);
     }
@@ -63,7 +93,7 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
 
   return (
     <Modal
-      title={editingUser ? "Modify User Account Profile" : "Register New System Stakeholder"}
+      title={editingUser ? "Modify User Account & Profile" : "Register New System User"}
       open={visible}
       onCancel={onCancel}
       onOk={() => form.submit()}
@@ -91,11 +121,11 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
           </Form.Item>
         )}
 
-        <Form.Item name="phone" label="Contact Mobile Number">
+        <Form.Item name="phone" label="Contact Phone Number">
           <Input />
         </Form.Item>
 
-        <Form.Item name="role" label="System Authentication Authorization Group">
+        <Form.Item name="role" label="Role Authorization Group">
           <Select onChange={(value) => setSelectedRole(value)} disabled={!!editingUser}>
             <Option value="student">Student Profile Scope</Option>
             <Option value="teacher">Educator/Teacher Profile Scope</Option>
@@ -106,25 +136,52 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
 
         {/* Conditional fields based on selected role */}
         {selectedRole === "student" && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-            <Form.Item name="grade" label="Academic Grade Standard" rules={[{ required: true, message: "Please select a grade" }]}>
-              <Select placeholder="Select Grade">
-                <Option value="6">Grade 6</Option>
-                <Option value="7">Grade 7</Option>
-                <Option value="8">Grade 8</Option>
-                <Option value="9">Grade 9</Option>
-                <Option value="10">Grade 10</Option>
-                <Option value="11">Grade 11</Option>
-                <Option value="12">Grade 12</Option>
-              </Select>
+          <>
+            <Form.Item
+              name="parent_id"
+              label="Assigned Parent / Guardian"
+              rules={[{ required: true, message: "Please assign a parent to this student" }]}
+            >
+              <Select
+                showSearch
+                placeholder="Select or Search Parent"
+                loading={loadingParents}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                }
+                options={parentsList.map((p) => {
+                  const pUser = p.user || {};
+                  const pProf = p.profile || {};
+                  const labelStr = `${pUser.first_name || ""} ${pUser.last_name || ""} (${pUser.email || ""})`;
+                  return {
+                    value: pProf._id || pProf.parent_id,
+                    label: labelStr,
+                  };
+                })}
+              />
             </Form.Item>
-            <Form.Item name="date_of_birth" label="Date of Birth" rules={[{ required: true }]}>
-              <DatePicker style={{ width: "100%" }} />
-            </Form.Item>
-            <Form.Item name="address" label="Home Postal Address" style={{ gridColumn: "span 2" }}>
-              <Input.TextArea rows={2} />
-            </Form.Item>
-          </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <Form.Item name="grade" label="Academic Grade Standard" rules={[{ required: true, message: "Please select a grade" }]}>
+                <Select placeholder="Select Grade">
+                  <Option value="6">Grade 6</Option>
+                  <Option value="7">Grade 7</Option>
+                  <Option value="8">Grade 8</Option>
+                  <Option value="9">Grade 9</Option>
+                  <Option value="10">Grade 10</Option>
+                  <Option value="11">Grade 11</Option>
+                  <Option value="12">Grade 12</Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name="date_of_birth" label="Date of Birth" rules={[{ required: true }]}>
+                <DatePicker style={{ width: "100%" }} />
+              </Form.Item>
+              <Form.Item name="address" label="Home Postal Address" style={{ gridColumn: "span 2" }}>
+                <Input.TextArea rows={2} />
+              </Form.Item>
+            </div>
+          </>
         )}
 
         {selectedRole === "teacher" && (

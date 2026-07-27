@@ -74,6 +74,24 @@ const UserTable = () => {
       },
     },
     {
+      title: "Parent / Guardian",
+      key: "parent",
+      render: (_, record) => {
+        if (record.user?.role === "student" && record.profile?.parent_id) {
+          const parentObj = record.profile.parent_id;
+          const parentUser = parentObj?.user_id || {};
+          if (parentUser.first_name) {
+            return (
+              <Tag color="cyan">
+                {parentUser.first_name} {parentUser.last_name}
+              </Tag>
+            );
+          }
+        }
+        return <Typography.Text type="secondary">—</Typography.Text>;
+      },
+    },
+    {
       title: "Status",
       dataIndex: ["user", "is_active"],
       key: "status",

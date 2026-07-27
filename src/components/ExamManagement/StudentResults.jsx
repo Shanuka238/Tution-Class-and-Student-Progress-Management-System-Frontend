@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Card, Table, Typography, message, Tag, theme } from "antd";
 import { examAPI } from "../../services/examApi";
+import { getGradeColor } from "../../enums/gradeColors";
 
 const { Title, Text } = Typography;
 
-const StudentResults = () => {
+const StudentResults = ({ results: propResults, loading: propLoading }) => {
   const { token: themeToken } = theme.useToken();
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState(propResults || []);
+  const [loading, setLoading] = useState(propLoading || false);
 
   useEffect(() => {
+    if (propResults !== undefined) {
+      setResults(propResults);
+      if (propLoading !== undefined) setLoading(propLoading);
+      return;
+    }
+
     fetchMyResults();
-  }, []);
+  }, [propResults, propLoading]);
 
   const fetchMyResults = async () => {
     setLoading(true);
@@ -23,17 +30,6 @@ const StudentResults = () => {
       message.error("Failed to fetch results");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getGradeColor = (grade) => {
-    switch (grade) {
-      case "A": return "green";
-      case "B": return "blue";
-      case "C": return "orange";
-      case "S": return "warning";
-      case "F": return "red";
-      default: return "default";
     }
   };
 
