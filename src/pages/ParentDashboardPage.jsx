@@ -1,7 +1,6 @@
 import { useState } from "react";
 import DashboardPage from "./DashboardPage";
 import ParentDashboardOverview from "../components/ParentDashboard/DashboardOverview";
-import ComingSoon from "../components/Common/ComingSoon";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -11,21 +10,19 @@ function ParentDashboardPage() {
   const renderContent = () => {
     switch (activeKey) {
       case "overview":
-        return <ParentDashboardOverview />;
-      
+        return <ParentDashboardOverview activeTab="overview" />;
       case "progress":
-        return <ComingSoon label="Child Progress" />;
+        return <ParentDashboardOverview activeTab="progress" />;
       case "attendance":
-        return <ComingSoon label="Attendance" />;
+        return <ParentDashboardOverview activeTab="attendance" />;
       case "exams":
-        return <ComingSoon label="Exams & Results" />;
+        return <ParentDashboardOverview activeTab="exams" />;
       case "analytics":
-        return <ComingSoon label="Performance Analytics" />;
+        return <ParentDashboardOverview activeTab="analytics" />;
       case "payments":
-        return <ComingSoon label="Payment Management" />;
-        
+        return <ParentDashboardOverview activeTab="payments" />;
       default:
-        return <ParentDashboardOverview />;
+        return <ParentDashboardOverview activeTab="overview" />;
     }
   };
 
