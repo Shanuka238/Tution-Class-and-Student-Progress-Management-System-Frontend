@@ -5,7 +5,7 @@ import StudentAttendance from "../components/StudentDashboard/StudentAttendance"
 import ComingSoon from "../components/Common/ComingSoon";
 import WeeklyTimetable from "../components/ClassManagement/WeeklyTimetable";
 import StudentResults from "../components/ExamManagement/StudentResults";
-import StudentPayments from "../components/StudentDashboard/StudentPayments";
+import StudentPayments from "../components/PaymentManagement/StudentPayments";
 import { NAV_CONFIG } from "../enums/navConfig";
 import "../styles/Dashboard.css";
 
@@ -16,7 +16,6 @@ function StudentDashboardPage() {
     switch (activeKey) {
       case "overview":
         return <StudentDashboardOverview />;
-      
       case "classes":
         return <WeeklyTimetable />;
       case "attendance":

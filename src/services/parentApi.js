@@ -1,14 +1,13 @@
 import apiRequest from "./api.js";
-
-const PARENT_API_URL = "/parents";
+import { API_URLS } from "./apiUrls";
 
 export const parentAPI = {
   getMyChildren: async () => {
-    return await apiRequest(`${PARENT_API_URL}/me/children`);
+    return await apiRequest(`${API_URLS.PARENT}/me/children`);
   },
 
   getChildProgress: async (studentId) => {
-    return await apiRequest(`${PARENT_API_URL}/children/${studentId}/progress`);
+    return await apiRequest(`${API_URLS.PARENT}/children/${studentId}/progress`);
   },
 };
 

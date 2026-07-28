@@ -1,7 +1,6 @@
-import React from "react";
 import { Table, Tag, Button, Space, theme } from "antd";
 import { CreditCardOutlined, FilePdfOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
+import { formatDate } from "../../utils/dateUtils";
 
 const PaymentTable = ({ fees, loading, onPay }) => {
   const { token: themeToken } = theme.useToken();
@@ -19,24 +18,24 @@ const PaymentTable = ({ fees, loading, onPay }) => {
             {record.class_id?.subject || "Subject"}
           </div>
         </div>
-      )
+      ),
     },
     {
       title: "Month",
       dataIndex: "month",
-      key: "month"
+      key: "month",
     },
     {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => <strong>LKR {amount.toLocaleString()}</strong>
+      render: (amount) => <strong>LKR {(amount || 0).toLocaleString()}</strong>,
     },
     {
       title: "Due Date",
       dataIndex: "due_date",
       key: "due_date",
-      render: (date) => dayjs(date).format("MMM DD, YYYY")
+      render: (date) => formatDate(date),
     },
     {
       title: "Status",
@@ -46,7 +45,7 @@ const PaymentTable = ({ fees, loading, onPay }) => {
         if (status === "paid") return <Tag color="success">Paid</Tag>;
         if (status === "unpaid") return <Tag color="processing">Unpaid</Tag>;
         return <Tag color="error">Overdue</Tag>;
-      }
+      },
     },
     {
       title: "Action",
@@ -72,8 +71,8 @@ const PaymentTable = ({ fees, loading, onPay }) => {
             </Button>
           )}
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
   return (

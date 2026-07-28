@@ -3,8 +3,8 @@ import { Card, Typography, message, theme } from "antd";
 import { feeAPI } from "../../services/feeApi";
 import PaymentStatsCards from "./PaymentStatsCards";
 import PaymentTable from "./PaymentTable";
-import dayjs from "dayjs";
 import { launchPayHereCheckout } from "../../utils/paymentUtils";
+import { formatDate } from "../../utils/dateUtils";
 
 const { Title, Text } = Typography;
 
@@ -61,10 +61,11 @@ const StudentPayments = () => {
     }
   };
 
-  const unpaidList = fees.filter(f => f.status !== "paid");
-  const totalUnpaidAmount = unpaidList.reduce((acc, f) => acc + f.amount, 0);
-  const nextDueDate = unpaidList.length > 0 
-    ? dayjs(unpaidList.sort((a, b) => new Date(a.due_date) - new Date(b.due_date))[0].due_date).format("MMM DD, YYYY")
+  const unpaidList = fees.filter((f) => f.status !== "paid");
+  const totalUnpaidAmount = unpaidList.reduce((acc, f) => acc + (f.amount || 0), 0);
+  const sortedUnpaid = [...unpaidList].sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+  const nextDueDate = sortedUnpaid.length > 0
+    ? formatDate(sortedUnpaid[0].due_date)
     : "No Pending Invoices";
 
   return (
@@ -86,7 +87,7 @@ const StudentPayments = () => {
           borderRadius: "12px",
           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
           border: `1px solid ${themeToken.colorBorderSecondary}`,
-          background: themeToken.colorBgContainer
+          background: themeToken.colorBgContainer,
         }}
       >
         <PaymentTable fees={fees} loading={loading} onPay={handleInitiatePayHere} />

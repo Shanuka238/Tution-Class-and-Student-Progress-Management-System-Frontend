@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Table, Tag, Card, Typography, Spin, message, Row, Col, Statistic, theme } from "antd";
 import { attendanceAPI } from "../../services/attendanceApi";
 import { CheckCircleOutlined, CloseCircleOutlined, ClockCircleOutlined } from "@ant-design/icons";
-import dayjs from "dayjs";
+import { formatDate } from "../../utils/dateUtils";
 
 const { Title, Text } = Typography;
 
@@ -51,7 +51,7 @@ const StudentAttendance = ({ attendance: propAttendance, loading: propLoading })
       key: "date",
       render: (_, record) => {
         const dateStr = record.session_id?.date || record.date;
-        return dateStr ? dayjs(dateStr).format("MMM D, YYYY") : "N/A";
+        return formatDate(dateStr);
       },
     },
     {

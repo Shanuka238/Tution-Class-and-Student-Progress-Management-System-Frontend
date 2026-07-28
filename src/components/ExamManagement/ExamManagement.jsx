@@ -5,6 +5,7 @@ import { classAPI } from "../../services/classApi";
 import { examAPI } from "../../services/examApi";
 import CreateExamModal from "./CreateExamModal";
 import ResultManager from "./ResultManager";
+import { formatDate } from "../../utils/dateUtils";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -79,7 +80,7 @@ const ExamManagement = () => {
       title: "Date",
       dataIndex: "exam_date",
       key: "exam_date",
-      render: (date) => new Date(date).toLocaleDateString(),
+      render: (date) => formatDate(date),
     },
     {
       title: "Total Marks",
