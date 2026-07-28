@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Card,
   Row,
@@ -9,6 +10,7 @@ import {
   Empty,
   Tooltip,
   theme,
+  Spin,
 } from "antd";
 import {
   RiseOutlined,
@@ -21,21 +23,62 @@ import {
 } from "@ant-design/icons";
 import { ATTENDANCE_STATUS } from "../../enums/attendanceStatus";
 import { getGradeColor } from "../../enums/gradeColors";
-import { GRADE_TO_MARKS_MAP } from "../../utils/academicUtils";
+import { GRADE_TO_MARKS_MAP, calculateGrowthMetrics, getGrowthBadge } from "../../utils/academicUtils";
+import { parentAPI } from "../../services/parentApi";
 
 const { Title, Text } = Typography;
 
 const ChildProgressView = ({
-  childUser,
-  growthBadge,
-  growthIndex = 100,
-  attendancePct = 100,
-  avgExamScore = 0,
-  enrolledClasses = [],
-  attendanceLogs = [],
-  examResults = [],
+  childUser: propChildUser,
+  growthBadge: propGrowthBadge,
+  growthIndex: propGrowthIndex,
+  attendancePct: propAttendancePct,
+  avgExamScore: propAvgExamScore,
+  enrolledClasses: propEnrolledClasses,
+  attendanceLogs: propAttendanceLogs,
+  examResults: propExamResults,
 }) => {
   const { token: themeToken } = theme.useToken();
+  const [internalData, setInternalData] = useState(null);
+  const [loading, setLoading] = useState(!propExamResults);
+
+  const fetchInternalData = useCallback(async () => {
+    try {
+      const childrenRes = await parentAPI.getMyChildren();
+      const childrenArr = Array.isArray(childrenRes.data || childrenRes) ? (childrenRes.data || childrenRes) : [];
+      if (childrenArr.length > 0) {
+        const studentId = childrenArr[0].student_id || childrenArr[0]._id;
+        const progressRes = await parentAPI.getChildProgress(studentId);
+        const data = progressRes.data || progressRes;
+        setInternalData({
+          childUser: childrenArr[0]?.user_id || {},
+          data,
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching child progress internally:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!propExamResults && !propAttendanceLogs) {
+      fetchInternalData();
+    }
+  }, [propExamResults, propAttendanceLogs, fetchInternalData]);
+
+  const attendanceLogs = propAttendanceLogs || internalData?.data?.attendance || [];
+  const enrolledClasses = propEnrolledClasses || internalData?.data?.classes || [];
+  const examResults = propExamResults || internalData?.data?.results || [];
+  const feeInvoices = internalData?.data?.fees || [];
+  const childUser = propChildUser || internalData?.childUser || {};
+
+  const metrics = calculateGrowthMetrics(attendanceLogs, examResults, feeInvoices);
+  const growthIndex = propGrowthIndex !== undefined ? propGrowthIndex : metrics.growthIndex;
+  const attendancePct = propAttendancePct !== undefined ? propAttendancePct : metrics.attendancePct;
+  const avgExamScore = propAvgExamScore !== undefined ? propAvgExamScore : metrics.avgExamScore;
+  const growthBadge = propGrowthBadge || getGrowthBadge(growthIndex);
 
   // Calculate Grade Distribution Counts
   const gradeCounts = { A: 0, B: 0, C: 0, S: 0, F: 0 };

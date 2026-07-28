@@ -1,4 +1,3 @@
-import React from "react";
 import { Row, Col, Card, Statistic, theme } from "antd";
 
 const PaymentStatsCards = ({ totalUnpaidAmount, unpaidCount, nextDueDate }) => {
@@ -33,7 +32,7 @@ const PaymentStatsCards = ({ totalUnpaidAmount, unpaidCount, nextDueDate }) => {
             valueStyle={{
               color: unpaidCount > 0 ? "#16a34a" : themeToken.colorTextDescription,
               fontSize: unpaidCount > 0 ? "24px" : "18px",
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
             formatter={(value) => value}
           />

@@ -3,6 +3,7 @@ import { Table, Button, Tag, Space, Modal, message, Typography, Popconfirm, them
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { adminAPI } from "../../services/adminApi";
 import UserModal from "./UserModal";
+import { getRoleColor } from "../../utils/roleHelper";
 
 const { Title } = Typography;
 
@@ -59,10 +60,7 @@ const UserTable = () => {
       title: "Role",
       dataIndex: ["user", "role"],
       key: "role",
-      render: (role) => {
-        const colors = { admin: "volcano", teacher: "purple", student: "geekblue", parent: "green" };
-        return <Tag color={colors[role] || "default"}>{role?.toUpperCase()}</Tag>;
-      },
+      render: (role) => <Tag color={getRoleColor(role)}>{role?.toUpperCase()}</Tag>,
     },
     {
       title: "System Reference ID",

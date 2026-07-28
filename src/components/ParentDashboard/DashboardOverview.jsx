@@ -11,6 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import { parentAPI } from "../../services/parentApi";
 import { feeAPI } from "../../services/feeApi";
 import StatCard from "../Common/StatCard";
+
 import dayjs from "dayjs";
 import ParentHeaderBanner from "./ParentHeaderBanner";
 import GrowthHighlightsBanner from "./GrowthHighlightsBanner";
@@ -18,14 +19,11 @@ import SubjectCompetencyCards from "./SubjectCompetencyCards";
 import ChildScheduleCard from "./ChildScheduleCard";
 import ChildFeeStandingCard from "./ChildFeeStandingCard";
 import AttendanceAnalyticsCard from "./AttendanceAnalyticsCard";
-import ChildProgressView from "./ChildProgressView";
-import StudentAttendance from "../StudentDashboard/StudentAttendance";
-import StudentResults from "../ExamManagement/StudentResults";
-import PaymentTable from "../StudentDashboard/PaymentTable";
+
 import { launchPayHereCheckout } from "../../utils/paymentUtils";
 import { calculateGrowthMetrics, getGrowthBadge } from "../../utils/academicUtils";
 
-function ParentDashboardOverview({ activeTab = "overview" }) {
+function ParentDashboardOverview() {
   const { user } = useAuth();
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(false);
@@ -108,7 +106,10 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
 
   // Handle direct PayHere redirection for parent
   const handleInitiatePayHere = async (feeRecordOrId) => {
-    const targetFeeId = typeof feeRecordOrId === "object" ? (feeRecordOrId._id || feeRecordOrId.id) : feeRecordOrId;
+    const targetFeeId =
+      typeof feeRecordOrId === "object"
+        ? feeRecordOrId._id || feeRecordOrId.id
+        : feeRecordOrId;
     if (!targetFeeId) return;
 
     setPayingFeeId(targetFeeId);
@@ -191,76 +192,18 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     },
   ];
 
-  // Header Banner Component
-  const headerBannerComp = (
-    <ParentHeaderBanner
-      user={user}
-      selectedChild={selectedChild}
-      children={children}
-      selectedStudentId={selectedStudentId}
-      setSelectedStudentId={setSelectedStudentId}
-      loadingChildren={loadingChildren}
-      growthBadge={growthBadge}
-    />
-  );
-
-  // Tab 1: Attendance Tab View
-  if (activeTab === "attendance") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {headerBannerComp}
-        <StudentAttendance attendance={attendanceLogs} loading={loadingProgress} />
-      </div>
-    );
-  }
-
-  // Tab 2: Exams & Results Tab View
-  if (activeTab === "exams") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {headerBannerComp}
-        <StudentResults results={examResults} loading={loadingProgress} />
-      </div>
-    );
-  }
-
-  // Tab 3: Payments Tab View
-  if (activeTab === "payments") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {headerBannerComp}
-        <PaymentTable
-          fees={feeInvoices}
-          loading={loadingProgress}
-          onPay={handleInitiatePayHere}
-        />
-      </div>
-    );
-  }
-
-  // Tab 4: Child Progress & Performance Analytics Tab View
-  if (activeTab === "progress" || activeTab === "analytics") {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        {headerBannerComp}
-        <ChildProgressView
-          childUser={childUser}
-          growthBadge={growthBadge}
-          growthIndex={growthIndex}
-          attendancePct={attendancePct}
-          avgExamScore={avgExamScore}
-          enrolledClasses={enrolledClasses}
-          attendanceLogs={attendanceLogs}
-          examResults={examResults}
-        />
-      </div>
-    );
-  }
-
-  // Default Overview View
   return (
     <div className="dashboard-content" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {headerBannerComp}
+      {/* Header Banner */}
+      <ParentHeaderBanner
+        user={user}
+        selectedChild={selectedChild}
+        children={children}
+        selectedStudentId={selectedStudentId}
+        setSelectedStudentId={setSelectedStudentId}
+        loadingChildren={loadingChildren}
+        growthBadge={growthBadge}
+      />
 
       {/* Stat Cards */}
       <div className="stats-row">

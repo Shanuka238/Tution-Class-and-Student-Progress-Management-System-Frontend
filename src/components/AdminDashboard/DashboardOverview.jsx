@@ -1,103 +1,246 @@
-import { Typography } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { Card, Typography, Row, Col, Tag, Spin, Space, Progress, theme } from "antd";
 import {
   TeamOutlined,
   BookOutlined,
   CheckSquareOutlined,
   DollarOutlined,
   FileTextOutlined,
+  CalendarOutlined,
+  RiseOutlined,
+  UserSwitchOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
 import { adminAPI } from "../../services/adminApi";
 import { classAPI } from "../../services/classApi";
+import { feeAPI } from "../../services/feeApi";
+import { examAPI } from "../../services/examApi";
 import StatCard from "../Common/StatCard";
+import dayjs from "dayjs";
+import { getRoleColor } from "../../utils/roleHelper";
 
-const { Text, Title } = Typography;
-
-// Returns Monday and Sunday dates of the current week
-function getCurrentWeekRange() {
-  const now = new Date();
-  const day = now.getDay(); 
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(now.getDate() + diffToMonday);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-  return { monday, sunday };
-}
+const { Title, Text } = Typography;
 
 function AdminDashboardOverview() {
   const { user } = useAuth();
-  const [stats, setStats] = useState([
-    { title: "Total Users", value: "—", icon: <TeamOutlined />, color: "#4F46E5" },
-    { title: "Active Classes This Week", value: "—", icon: <BookOutlined />, color: "#10B981" },
-    { title: "Today's Attendance", value: "—", icon: <CheckSquareOutlined />, color: "#F59E0B" },
-    { title: "Fee Collected", value: "—", icon: <DollarOutlined />, color: "#3B82F6" },
-    { title: "Exams This Month", value: "—", icon: <FileTextOutlined />, color: "#8B5CF6" },
-  ]);
+  const { token: themeToken } = theme.useToken();
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const userResponse = await adminAPI.getAllUsers();
-        const users = userResponse.data || userResponse;
-        const userCount = Array.isArray(users) ? users.length : 0;
-        let weekClassCount = 0;
-        try {
-          const classResponse = await classAPI.getActiveClasses();
-          const classes = classResponse.data || classResponse;
-          if (Array.isArray(classes)) {
-            const { monday, sunday } = getCurrentWeekRange();
-            weekClassCount = classes.filter((cls) => {
-              if (!cls.schedule_date) return false;
-              const classDate = new Date(cls.schedule_date);
-              return classDate >= monday && classDate <= sunday;
-            }).length;
-          }
-        } catch (classError) {
-          console.error("Failed to fetch class count:", classError);
-        }
+  const [usersList, setUsersList] = useState([]);
+  const [classList, setClassList] = useState([]);
+  const [feesData, setFeesData] = useState([]);
+  const [examsList, setExamsList] = useState([]);
 
-        setStats((prevStats) =>
-          prevStats.map((stat) => {
-            if (stat.title === "Total Users") return { ...stat, value: userCount.toString() };
-            if (stat.title === "Active Classes This Week") return { ...stat, value: weekClassCount.toString() };
-            return stat;
-          })
-        );
-      } catch (error) {
-        console.error("Failed to fetch dashboard stats:", error);
-      }
-    };
+  const loadAdminMetrics = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [usersRes, classesRes, feesRes] = await Promise.allSettled([
+        adminAPI.getAllUsers(),
+        classAPI.getActiveClasses(),
+        feeAPI.getAllFees(),
+      ]);
 
-    fetchStats();
+      const uData = usersRes.status === "fulfilled" ? usersRes.value.data || usersRes.value : [];
+      setUsersList(Array.isArray(uData) ? uData : []);
+
+      const cData = classesRes.status === "fulfilled" ? classesRes.value.data || classesRes.value : [];
+      setClassList(Array.isArray(cData) ? cData : []);
+
+      const fData = feesRes.status === "fulfilled" ? feesRes.value.data || feesRes.value : [];
+      setFeesData(Array.isArray(fData) ? fData : []);
+
+      const eData = examsRes.status === "fulfilled" ? examsRes.value.data || examsRes.value : [];
+      setExamsList(Array.isArray(eData) ? eData : []);
+    } catch (err) {
+      console.error("Error loading admin dashboard metrics:", err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return (
-    <div className="dashboard-content">
-      <div className="welcome-section">
-        <Title level={2} style={{ margin: 0 }}>
-          Welcome back, {user?.first_name}! 👋
-        </Title>
-        <Text type="secondary">
-          Here's what's happening at your tuition center today.
-        </Text>
-      </div>
+  useEffect(() => {
+    loadAdminMetrics();
+  }, [loadAdminMetrics]);
 
+  // Role Breakdown
+  const studentCount = usersList.filter((u) => u.user?.role === "student" || u.role === "student").length;
+  const teacherCount = usersList.filter((u) => u.user?.role === "teacher" || u.role === "teacher").length;
+  const parentCount = usersList.filter((u) => u.user?.role === "parent" || u.role === "parent").length;
+  const adminCount = usersList.filter((u) => u.user?.role === "admin" || u.role === "admin").length;
+
+  const totalUsers = usersList.length;
+
+  // Fee Analytics
+  const paidFees = feesData.filter((f) => f.status === "paid");
+  const totalCollected = paidFees.reduce((acc, f) => acc + (f.amount || 0), 0);
+
+  const statCardsData = [
+    {
+      title: "Total System Users",
+      value: totalUsers.toString(),
+      icon: <TeamOutlined />,
+      color: "#4F46E5",
+    },
+    {
+      title: "Active Classes",
+      value: classList.length.toString(),
+      icon: <BookOutlined />,
+      color: "#10B981",
+    },
+    {
+      title: "Fee Revenue Collected",
+      value: `LKR ${totalCollected.toLocaleString()}`,
+      icon: <DollarOutlined />,
+      color: "#3B82F6",
+    },
+    {
+      title: "Registered Teachers",
+      value: teacherCount.toString(),
+      icon: <UserSwitchOutlined />,
+      color: "#8B5CF6",
+    },
+    {
+      title: "Active Students",
+      value: studentCount.toString(),
+      icon: <UserSwitchOutlined />,
+      color: "#EC4899",
+    },
+  ];
+
+  return (
+    <div className="dashboard-content" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {/* Welcome Banner */}
+      <Card
+        bordered={false}
+        style={{
+          borderRadius: "16px",
+          background: `linear-gradient(135deg, ${themeToken.colorPrimary}15 0%, ${themeToken.colorPrimary}05 100%)`,
+          border: `1px solid ${themeToken.colorPrimary}30`,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+          <div>
+            <Title level={2} style={{ margin: "0 0 4px 0" }}>
+              Welcome back, {user?.first_name || "Administrator"}! ⚡
+            </Title>
+            <Text type="secondary" style={{ fontSize: "15px" }}>
+              System-wide operational overview, user accounts, active classes, and financial metrics.
+            </Text>
+          </div>
+          <Tag color="blue" icon={<CalendarOutlined />} style={{ padding: "6px 14px", fontSize: "14px", borderRadius: "8px" }}>
+            {dayjs().format("dddd, MMMM D, YYYY")}
+          </Tag>
+        </div>
+      </Card>
+
+      {/* High-Level Stat Cards */}
       <div className="stats-row">
-        {stats.map((stat, i) => (
+        {statCardsData.map((stat, i) => (
           <StatCard key={i} stat={stat} />
         ))}
       </div>
 
-      <div className="placeholder-card">
-        <Text type="secondary" style={{ fontSize: 15 }}>
-          🚧 Full admin analytics, charts, and management tables will appear
-          here as each module is built.
-        </Text>
-      </div>
+      {/* Main Grid */}
+      <Row gutter={[20, 20]}>
+        {/* Left Column: Active Classes Overview & System Activity */}
+        <Col xs={24} lg={15}>
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <Card
+              title={
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <BookOutlined style={{ color: "#10B981" }} />
+                  <span>Tuition Classes Overview ({classList.length})</span>
+                </div>
+              }
+              bordered={false}
+              style={{
+                borderRadius: "14px",
+                border: `1px solid ${themeToken.colorBorderSecondary}`,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              }}
+            >
+              {loading ? (
+                <div style={{ textAlign: "center", padding: "30px" }}>
+                  <Spin size="medium" />
+                </div>
+              ) : classList.length > 0 ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {classList.slice(0, 5).map((item) => (
+                    <div
+                      key={item._id}
+                      style={{
+                        padding: "14px 16px",
+                        borderRadius: "10px",
+                        background: themeToken.colorBgLayout,
+                        display: "flex",
+                        justify: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: "600", fontSize: "15px" }}>
+                          {item.class_name}
+                        </div>
+                        <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
+                          Subject: {item.subject} • Grade {item.grade}
+                        </div>
+                      </div>
+                      <Tag color="purple">Max Capacity: {item.max_students}</Tag>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Text type="secondary">No active tuition classes configured in the system.</Text>
+              )}
+            </Card>
+          </Space>
+        </Col>
+
+        {/* Right Column: User Role Breakdown */}
+        <Col xs={24} lg={9}>
+          <Space direction="vertical" size="large" style={{ width: "100%" }}>
+            <Card
+              title={
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <TeamOutlined style={{ color: "#4F46E5" }} />
+                  <span>User Role Breakdown</span>
+                </div>
+              }
+              bordered={false}
+              style={{
+                borderRadius: "14px",
+                border: `1px solid ${themeToken.colorBorderSecondary}`,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                {[
+                  { role: "student", label: "Students", count: studentCount },
+                  { role: "teacher", label: "Teachers / Educators", count: teacherCount },
+                  { role: "parent", label: "Parents / Guardians", count: parentCount },
+                  { role: "admin", label: "Administrators", count: adminCount },
+                ].map((item) => {
+                  const pct = totalUsers > 0 ? Math.round((item.count / totalUsers) * 100) : 0;
+                  return (
+                    <div key={item.role}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                        <span>
+                          <Tag color={getRoleColor(item.role)}>{item.label}</Tag>
+                        </span>
+                        <span style={{ fontWeight: "bold" }}>
+                          {item.count} ({pct}%)
+                        </span>
+                      </div>
+                      <Progress percent={pct} showInfo={false} strokeColor={themeToken.colorPrimary} size="small" />
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          </Space>
+        </Col>
+      </Row>
     </div>
   );
 }
