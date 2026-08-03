@@ -2,7 +2,7 @@ import { useState } from "react";
 import DashboardPage from "./DashboardPage";
 import StudentDashboardOverview from "../components/StudentDashboard/DashboardOverview";
 import StudentAttendance from "../components/StudentDashboard/StudentAttendance";
-import ComingSoon from "../components/Common/ComingSoon";
+import StudentAnalyticsView from "../components/StudentDashboard/StudentAnalyticsView";
 import WeeklyTimetable from "../components/ClassManagement/WeeklyTimetable";
 import StudentResults from "../components/ExamManagement/StudentResults";
 import StudentPayments from "../components/PaymentManagement/StudentPayments";
@@ -23,7 +23,7 @@ function StudentDashboardPage() {
       case "exams":
         return <StudentResults />;
       case "analytics":
-        return <ComingSoon label="My Performance" />;
+        return <StudentAnalyticsView />;
       case "payments":
         return <StudentPayments />;
         

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import DashboardPage from "./DashboardPage";
 import TeacherDashboardOverview from "../components/TeacherDashboard/DashboardOverview";
-import ComingSoon from "../components/Common/ComingSoon";
+import TeacherAnalyticsView from "../components/TeacherDashboard/TeacherAnalyticsView";
 import ClassSection from "../components/ClassManagement/ClassSection";
 import AttendanceManager from "../components/AttendanceManagement/AttendanceManager";
 import ExamManagement from "../components/ExamManagement/ExamManagement";
@@ -23,7 +23,7 @@ function TeacherDashboardPage() {
       case "exams":
         return <ExamManagement />;
       case "analytics":
-        return <ComingSoon label="Performance Analytics" />;
+        return <TeacherAnalyticsView />;
         
       default:
         return <TeacherDashboardOverview />;

@@ -14,7 +14,6 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
 
   useEffect(() => {
     if (visible) {
-      // Fetch registered parent accounts for parent dropdown assignment
       const fetchParents = async () => {
         setLoadingParents(true);
         try {

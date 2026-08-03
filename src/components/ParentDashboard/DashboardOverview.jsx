@@ -20,6 +20,7 @@ import ChildScheduleCard from "./ChildScheduleCard";
 import ChildFeeStandingCard from "./ChildFeeStandingCard";
 import AttendanceAnalyticsCard from "./AttendanceAnalyticsCard";
 import ChildProgressView from "./ChildProgressView";
+import ParentAnalyticsView from "./ParentAnalyticsView";
 import StudentAttendance from "../StudentDashboard/StudentAttendance";
 import StudentResults from "../ExamManagement/StudentResults";
 import PaymentTable from "../PaymentManagement/PaymentTable";
@@ -36,7 +37,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [progressData, setProgressData] = useState(null);
 
-  // 1. Fetch linked children for parent account
   const loadLinkedChildren = useCallback(async () => {
     setLoadingChildren(true);
     try {
@@ -59,7 +59,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     loadLinkedChildren();
   }, [loadLinkedChildren]);
 
-  // 2. Fetch selected child's academic progress data
   const loadChildProgress = useCallback(async (studentId) => {
     if (!studentId) return;
     setLoadingProgress(true);
@@ -81,7 +80,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     }
   }, [selectedStudentId, loadChildProgress]);
 
-  // Handle PayHere redirect callback query parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get("payment");
@@ -107,7 +105,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     }
   }, [selectedStudentId, loadChildProgress]);
 
-  // Handle direct PayHere redirection for parent
   const handleInitiatePayHere = async (feeRecordOrId) => {
     const targetFeeId =
       typeof feeRecordOrId === "object"
@@ -132,7 +129,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
   );
   const childUser = selectedChild?.user_id || {};
 
-  // Derived Analytics & Metrics for Selected Child
   const attendanceLogs = progressData?.attendance || [];
   const enrolledClasses = progressData?.classes || [];
   const feeInvoices = progressData?.fees || [];
@@ -152,13 +148,11 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
 
   const growthBadge = getGrowthBadge(growthIndex);
 
-  // Filter today's sessions
   const todayStr = dayjs().format("YYYY-MM-DD");
   const todaySessions = timetableSessions.filter(
     (s) => dayjs(s.date).format("YYYY-MM-DD") === todayStr
   );
 
-  // Stat Cards Data
   const statCardsData = [
     {
       title: "Academic Growth Index",
@@ -195,7 +189,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     },
   ];
 
-  // Header Banner Component
   const headerBannerComp = (
     <ParentHeaderBanner
       user={user}
@@ -208,7 +201,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     />
   );
 
-  // Tab 1: Attendance Tab View
   if (activeTab === "attendance") {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -218,7 +210,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     );
   }
 
-  // Tab 2: Exams & Results Tab View
   if (activeTab === "exams") {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -228,7 +219,6 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     );
   }
 
-  // Tab 3: Payments Tab View
   if (activeTab === "payments") {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -242,8 +232,7 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     );
   }
 
-  // Tab 4: Child Progress & Performance Analytics Tab View
-  if (activeTab === "progress" || activeTab === "analytics") {
+  if (activeTab === "progress") {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {headerBannerComp}
@@ -261,11 +250,19 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     );
   }
 
+  if (activeTab === "analytics") {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {headerBannerComp}
+        <ParentAnalyticsView examResults={examResults} />
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-content" style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {headerBannerComp}
 
-      {/* Stat Cards */}
       <div className="stats-row">
         {statCardsData.map((stat, i) => (
           <StatCard key={i} stat={stat} />

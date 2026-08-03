@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import DashboardPage from "./DashboardPage";
 import AdminDashboardOverview from "../components/AdminDashboard/DashboardOverview";
 import UserTable from "../components/UserManagement/UserTable"; 
-import ComingSoon from "../components/Common/ComingSoon";
+import AdminAnalyticsView from "../components/AdminDashboard/AdminAnalyticsView";
 import { NAV_CONFIG } from "../enums/navConfig";
 import ClassSection from "../components/ClassManagement/ClassSection";
 import AttendanceManager from "../components/AttendanceManagement/AttendanceManager";
@@ -17,10 +17,8 @@ function AdminDashboardPage() {
     switch (activeKey) {
       case "overview":
         return <AdminDashboardOverview />;
-      
       case "users":
-        return <UserTable />;
-        
+        return <UserTable />;  
       case "classes":
         return <ClassSection />;
       case "attendance":
@@ -28,7 +26,7 @@ function AdminDashboardPage() {
       case "exams":
         return <ExamManagement />;
       case "analytics":
-        return <ComingSoon label="Performance Analytics" />;
+        return <AdminAnalyticsView />;
       case "payments":
         return <FeeManagement />;
         

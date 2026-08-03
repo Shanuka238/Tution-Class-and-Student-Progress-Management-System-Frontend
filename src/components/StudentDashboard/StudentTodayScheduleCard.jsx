@@ -40,7 +40,7 @@ const StudentTodayScheduleCard = ({ todaySessions = [], upcomingSessions = [], l
                   border: `1px solid ${themeToken.colorBorderSecondary}`,
                   background: themeToken.colorBgContainer,
                   display: "flex",
-                  justify: "space-between",
+                  justifyContent: "space-between",
                   alignItems: "center",
                   flexWrap: "wrap",
                   gap: "12px",

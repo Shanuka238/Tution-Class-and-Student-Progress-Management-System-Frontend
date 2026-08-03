@@ -32,7 +32,7 @@ const TeacherAssignedClassesCard = ({ assignedClasses = [] }) => {
                   borderRadius: "10px",
                   background: themeToken.colorBgLayout,
                   display: "flex",
-                  justify: "space-between",
+                  justifyContent: "space-between",
                   alignItems: "center",
                   flexWrap: "wrap",
                   gap: "12px",
