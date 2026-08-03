@@ -18,6 +18,8 @@ import { examAPI } from "../../services/examApi";
 import StatCard from "../Common/StatCard";
 import dayjs from "dayjs";
 import { getRoleColor } from "../../utils/roleHelper";
+import AdminRevenueChart from "./AdminRevenueChart";
+import AdminEnrollmentAttendanceChart from "./AdminEnrollmentAttendanceChart";
 
 const { Title, Text } = Typography;
 
@@ -62,7 +64,6 @@ function AdminDashboardOverview() {
     loadAdminMetrics();
   }, [loadAdminMetrics]);
 
-  // Role Breakdown
   const studentCount = usersList.filter((u) => u.user?.role === "student" || u.role === "student").length;
   const teacherCount = usersList.filter((u) => u.user?.role === "teacher" || u.role === "teacher").length;
   const parentCount = usersList.filter((u) => u.user?.role === "parent" || u.role === "parent").length;
@@ -70,7 +71,6 @@ function AdminDashboardOverview() {
 
   const totalUsers = usersList.length;
 
-  // Fee Analytics
   const paidFees = feesData.filter((f) => f.status === "paid");
   const totalCollected = paidFees.reduce((acc, f) => acc + (f.amount || 0), 0);
 
@@ -174,7 +174,7 @@ function AdminDashboardOverview() {
                         borderRadius: "10px",
                         background: themeToken.colorBgLayout,
                         display: "flex",
-                        justify: "space-between",
+                        justifyContent: "space-between",
                         alignItems: "center",
                       }}
                     >

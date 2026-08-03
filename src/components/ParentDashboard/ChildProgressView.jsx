@@ -13,7 +13,6 @@ import {
   Spin,
 } from "antd";
 import {
-  RiseOutlined,
   TrophyOutlined,
   BookOutlined,
   CheckCircleOutlined,
@@ -80,7 +79,6 @@ const ChildProgressView = ({
   const avgExamScore = propAvgExamScore !== undefined ? propAvgExamScore : metrics.avgExamScore;
   const growthBadge = propGrowthBadge || getGrowthBadge(growthIndex);
 
-  // Calculate Grade Distribution Counts
   const gradeCounts = { A: 0, B: 0, C: 0, S: 0, F: 0 };
   examResults.forEach((r) => {
     if (r.grade && gradeCounts[r.grade] !== undefined) {
@@ -289,7 +287,7 @@ const ChildProgressView = ({
                                   key={e._id}
                                   style={{
                                     display: "flex",
-                                    justify: "space-between",
+                                    justifyContent: "space-between",
                                     alignItems: "center",
                                     background: themeToken.colorBgContainer,
                                     padding: "6px 10px",

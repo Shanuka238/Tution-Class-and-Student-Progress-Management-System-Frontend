@@ -33,19 +33,19 @@ const StudentRecentResultsCard = ({ examResults = [] }) => {
                   borderRadius: "8px",
                   background: themeToken.colorBgLayout,
                   display: "flex",
-                  justify: "space-between",
+                  justifyContent: "space-between",
                   alignItems: "center",
                 }}
               >
                 <div>
                   <div style={{ fontWeight: "600", fontSize: "14px" }}>
-                    {exam.title || cls.class_name || "Class Exam"}
+                    {exam.title || exam.exam_title || cls.class_name || "Class Exam"}
                   </div>
                   <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
-                    {cls.subject || "Subject"} • Score: {item.marks !== undefined ? `${item.marks}/100` : "N/A"}
+                    {cls.subject || "Subject"} • Score: {item.marks_obtained ?? item.marks ?? item.score ?? "N/A"}/100
                   </div>
                 </div>
-                <Tag color={getGradeColor(item.grade)} style={{ fontWeight: "bold", padding: "4px 10px" }}>
+                <Tag color={getGradeColor(item.grade)} style={{ fontWeight: "bold", padding: "4px 10px", margin: 0 }}>
                   Grade {item.grade || "N/A"}
                 </Tag>
               </div>

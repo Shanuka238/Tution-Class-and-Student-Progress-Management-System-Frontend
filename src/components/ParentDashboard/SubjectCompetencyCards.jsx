@@ -27,7 +27,6 @@ const SubjectCompetencyCards = ({
       {enrolledClasses.length > 0 ? (
         <Row gutter={[16, 16]}>
           {enrolledClasses.map((cls) => {
-            // Subject attendance percentage
             const subjectLogs = attendanceLogs.filter(
               (a) => String(a.class_id?._id || a.class_id) === String(cls._id)
             );
@@ -37,7 +36,6 @@ const SubjectCompetencyCards = ({
                 ? Math.round((subjPresent / subjectLogs.length) * 100)
                 : 100;
 
-            // Subject exam results
             const subjExams = examResults.filter(
               (r) => String(r.exam_id?.class_id?._id || r.exam_id?.class_id) === String(cls._id)
             );

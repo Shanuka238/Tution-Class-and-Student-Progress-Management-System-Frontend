@@ -40,8 +40,8 @@ const StudentAttendanceRatioCard = ({
       <div
         style={{
           display: "flex",
-          justify: "space-between",
-          padding: "10px",
+          justifyContent: "space-between",
+          padding: "10px 16px",
           borderRadius: "8px",
           background: themeToken.colorBgLayout,
           textAlign: "center",
