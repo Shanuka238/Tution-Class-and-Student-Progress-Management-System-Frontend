@@ -40,13 +40,10 @@ function LoginLeftPanel() {
       <div className="login-left-content">
         {/* Brand Logo */}
         <div className="brand-logo">
-          <div className="logo-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white" />
-              <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <div className="logo-icon" style={{ background: "transparent", boxShadow: "none" }}>
+            <img src="/logo.png" alt="EduManage 360 Logo" style={{ width: "42px", height: "42px", objectFit: "contain" }} />
           </div>
-          <h1 className="brand-name">EduTracker</h1>
+          <h1 className="brand-name">EduManage 360</h1>
         </div>
 
         {/* Headline */}

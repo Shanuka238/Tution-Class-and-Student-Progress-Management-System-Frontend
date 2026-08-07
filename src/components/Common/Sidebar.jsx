@@ -28,10 +28,10 @@ function Sidebar({ collapsed, activeNav, onNavChange, navItems }) {
     >
       {/* Logo area */}
       <div className="sidebar-logo">
-        <div className="logo-icon">
-          <span>E</span>
+        <div className="logo-icon" style={{ background: "none" }}>
+          <img src="/logo.png" alt="EduManage 360 Logo" style={{ width: "32px", height: "32px", objectFit: "contain" }} />
         </div>
-        {!collapsed && <span className="logo-text">EduTracker</span>}
+        {!collapsed && <span className="logo-text">EduManage 360</span>}
       </div>
 
       {/* Navigation */}

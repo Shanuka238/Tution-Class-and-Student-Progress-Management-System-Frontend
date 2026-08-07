@@ -53,7 +53,14 @@ const StudentPayments = () => {
 
   const handleInitiatePayHere = async (feeRecord) => {
     try {
-      const res = await feeAPI.initiatePayHere(feeRecord._id);
+      const targetFeeId =
+        typeof feeRecord === "object"
+          ? feeRecord._id || feeRecord.fee_id || feeRecord.id
+          : feeRecord;
+      if (!targetFeeId) {
+        throw new Error("Invalid fee record ID");
+      }
+      const res = await feeAPI.initiatePayHere(targetFeeId);
       launchPayHereCheckout(res.data || res);
     } catch (err) {
       console.error("Error launching PayHere gateway:", err);

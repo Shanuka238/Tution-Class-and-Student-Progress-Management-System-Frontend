@@ -36,10 +36,11 @@ function AdminDashboardOverview() {
   const loadAdminMetrics = useCallback(async () => {
     setLoading(true);
     try {
-      const [usersRes, classesRes, feesRes] = await Promise.allSettled([
+      const [usersRes, classesRes, feesRes, examsRes] = await Promise.allSettled([
         adminAPI.getAllUsers(),
         classAPI.getActiveClasses(),
         feeAPI.getAllFees(),
+        examAPI.getMyResults ? examAPI.getMyResults() : Promise.resolve([]),
       ]);
 
       const uData = usersRes.status === "fulfilled" ? usersRes.value.data || usersRes.value : [];

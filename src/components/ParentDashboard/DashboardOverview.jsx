@@ -108,7 +108,7 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
   const handleInitiatePayHere = async (feeRecordOrId) => {
     const targetFeeId =
       typeof feeRecordOrId === "object"
-        ? feeRecordOrId._id || feeRecordOrId.id
+        ? feeRecordOrId._id || feeRecordOrId.fee_id || feeRecordOrId.id
         : feeRecordOrId;
     if (!targetFeeId) return;
 
