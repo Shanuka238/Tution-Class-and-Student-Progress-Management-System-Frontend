@@ -15,6 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
 import { formatRoleDisplay } from "../../utils/roleHelper";
 import ProfileModal from "../Profile/ProfileModal";
+import NotificationDropdown from "../Notifications/NotificationDropdown";
 
 const { Header: AntHeader } = Layout;
 const { Text, Title } = Typography;
@@ -79,7 +80,7 @@ function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
 
         {/* Right: notifications + theme toggle + user */}
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Button type="text" icon={<BellOutlined />} style={{ fontSize: 18 }} />
+          <NotificationDropdown />
 
           <Button
             type="text"

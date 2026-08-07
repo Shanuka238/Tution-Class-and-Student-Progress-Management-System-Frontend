@@ -14,4 +14,5 @@ export const API_URLS = {
   EXAMS: "/exams",
   HEALTH: "/health",
   PARENT: "/parents",
+  NOTIFICATIONS: "/notifications",
 };
