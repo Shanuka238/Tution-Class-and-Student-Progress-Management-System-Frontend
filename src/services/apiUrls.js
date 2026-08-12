@@ -15,4 +15,5 @@ export const API_URLS = {
   HEALTH: "/health",
   PARENT: "/parents",
   NOTIFICATIONS: "/notifications",
+  CHATBOT: "/chatbot",
 };
