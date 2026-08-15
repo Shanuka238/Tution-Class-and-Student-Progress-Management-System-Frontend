@@ -5,6 +5,18 @@ import dayjs from "dayjs";
 
 const { Option } = Select;
 
+const cleanPhoneForInput = (ph) => {
+  if (!ph) return "";
+  let str = String(ph).trim().replace(/\D/g, "");
+  if (str.startsWith("94") && str.length === 11) {
+    return str.substring(2);
+  }
+  if (str.startsWith("0") && str.length === 10) {
+    return str.substring(1);
+  }
+  return str.slice(0, 9);
+};
+
 const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
   const [form] = Form.useForm();
   const [selectedRole, setSelectedRole] = useState("student");
@@ -50,7 +62,7 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
           first_name: baseUser.first_name,
           last_name: baseUser.last_name,
           email: baseUser.email,
-          phone: baseUser.phone,
+          phone: cleanPhoneForInput(baseUser.phone),
           role: baseUser.role,
           parent_id: parentIdValue,
           grade: profile.grade,
@@ -58,7 +70,7 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
           subjects: profile.subjects,
           qualifications: profile.qualifications,
           relationship: profile.relationship,
-          emergency_contact: profile.emergency_contact,
+          emergency_contact: cleanPhoneForInput(profile.emergency_contact),
           occupation: profile.occupation,
           date_of_birth: profile.date_of_birth ? dayjs(profile.date_of_birth) : null,
         });
@@ -72,14 +84,24 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
   const onFinish = async (values) => {
     setSubmitting(true);
     try {
+      const payload = { ...values };
+      if (payload.phone && payload.phone.trim()) {
+        const digits = payload.phone.trim().replace(/\D/g, "");
+        payload.phone = "+94" + digits;
+      }
+      if (payload.emergency_contact && payload.emergency_contact.trim()) {
+        const digits = payload.emergency_contact.trim().replace(/\D/g, "");
+        payload.emergency_contact = "+94" + digits;
+      }
+
       if (editingUser) {
         const id = editingUser.user._id || editingUser.user.user_id;
-        const { role, ...updatePayload } = values;
+        const { role, ...updatePayload } = payload;
 
         await adminAPI.updateUser(id, updatePayload);
         message.success("User account and profile updated successfully");
       } else {
-        await adminAPI.createUser(values);
+        await adminAPI.createUser(payload);
         message.success("User account initialized successfully");
       }
       onSuccess();
@@ -120,8 +142,31 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
           </Form.Item>
         )}
 
-        <Form.Item name="phone" label="Contact Phone Number">
-          <Input />
+        <Form.Item
+          name="phone"
+          label="Contact Phone Number"
+          rules={[
+            {
+              validator: (_, value) => {
+                if (!value || !value.trim()) return Promise.resolve();
+                const digits = value.trim().replace(/\D/g, "");
+                if (digits.length === 9) {
+                  return Promise.resolve();
+                }
+                return Promise.reject(new Error("Please enter exactly 9 digits following +94 (e.g. 771234567)"));
+              },
+            },
+          ]}
+        >
+          <Input
+            addonBefore="+94"
+            placeholder="771234567"
+            maxLength={9}
+            onChange={(e) => {
+              const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 9);
+              form.setFieldsValue({ phone: digitsOnly });
+            }}
+          />
         </Form.Item>
 
         <Form.Item name="role" label="Role Authorization Group">
@@ -138,12 +183,12 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
           <>
             <Form.Item
               name="parent_id"
-              label="Assigned Parent / Guardian"
-              rules={[{ required: true, message: "Please assign a parent to this student" }]}
+              label="Assigned Parent / Guardian (Optional)"
             >
               <Select
                 showSearch
-                placeholder="Select or Search Parent"
+                allowClear
+                placeholder="Select or Search Parent (Optional)"
                 loading={loadingParents}
                 optionFilterProp="children"
                 filterOption={(input, option) =>
@@ -203,8 +248,31 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
                 <Option value="guardian">Legal Guardian</Option>
               </Select>
             </Form.Item>
-            <Form.Item name="emergency_contact" label="Emergency Secondary Phone Number">
-              <Input />
+            <Form.Item
+              name="emergency_contact"
+              label="Emergency Secondary Phone Number"
+              rules={[
+                {
+                  validator: (_, value) => {
+                    if (!value || !value.trim()) return Promise.resolve();
+                    const digits = value.trim().replace(/\D/g, "");
+                    if (digits.length === 9) {
+                      return Promise.resolve();
+                    }
+                    return Promise.reject(new Error("Please enter exactly 9 digits following +94 (e.g. 771234567)"));
+                  },
+                },
+              ]}
+            >
+              <Input
+                addonBefore="+94"
+                placeholder="771234567"
+                maxLength={9}
+                onChange={(e) => {
+                  const digitsOnly = e.target.value.replace(/\D/g, "").slice(0, 9);
+                  form.setFieldsValue({ emergency_contact: digitsOnly });
+                }}
+              />
             </Form.Item>
             <Form.Item name="occupation" label="Primary Profession">
               <Input />

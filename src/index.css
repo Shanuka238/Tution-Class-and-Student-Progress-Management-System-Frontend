@@ -106,3 +106,19 @@ input {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-primary);
 }
+
+/* Centered Top Toast Notifications Container */
+.ant-notification-top {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin-left: 0 !important;
+  top: 10px !important;
+}
+
+.ant-notification-notice {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 10px !important;
+  border-radius: 22px !important;
+}

@@ -67,8 +67,8 @@ const StudentTodayScheduleCard = ({ todaySessions = [], upcomingSessions = [], l
                     )}
                   </div>
                 </div>
-                <Tag color={session.status === "held" ? "green" : "red"}>
-                  {(session.status || "Scheduled").toUpperCase()}
+                <Tag color={session.status === "held" ? "green" : session.status === "cancelled" ? "red" : "blue"}>
+                  {(session.status || "scheduled").toUpperCase()}
                 </Tag>
               </div>
             );

@@ -1,13 +1,17 @@
 import React, { useState, useMemo } from "react";
-import { Card, Table, Tag, Input, Typography, Row, Col, Progress, theme } from "antd";
-import { SearchOutlined, UserOutlined, TrophyOutlined } from "@ant-design/icons";
+import { Card, Table, Tag, Input, Select, Button, Typography, Row, Col, Progress, theme } from "antd";
+import { SearchOutlined, UserOutlined, TrophyOutlined, ReloadOutlined } from "@ant-design/icons";
 import { getGradeColor } from "../../enums/gradeColors";
 
 const { Text } = Typography;
+const { Option } = Select;
 
 const TeacherStudentPerformanceCard = ({ examResults = [] }) => {
   const { token: themeToken } = theme.useToken();
   const [searchText, setSearchText] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("all");
+  const [selectedGrade, setSelectedGrade] = useState("all");
+  const [passFailStatus, setPassFailStatus] = useState("all");
 
   const studentPerformanceList = useMemo(() => {
     return examResults.map((r, index) => {
@@ -44,16 +48,52 @@ const TeacherStudentPerformanceCard = ({ examResults = [] }) => {
     });
   }, [examResults]);
 
+  const uniqueSubjects = useMemo(() => {
+    const set = new Set();
+    studentPerformanceList.forEach((s) => {
+      if (s.subject) set.add(s.subject);
+    });
+    return Array.from(set);
+  }, [studentPerformanceList]);
+
   const filteredList = useMemo(() => {
-    if (!searchText) return studentPerformanceList;
-    const query = searchText.toLowerCase();
-    return studentPerformanceList.filter(
-      (s) =>
-        s.studentName.toLowerCase().includes(query) ||
-        s.indexNo.toLowerCase().includes(query) ||
-        s.subject.toLowerCase().includes(query)
-    );
-  }, [studentPerformanceList, searchText]);
+    return studentPerformanceList.filter((s) => {
+      // 1. Subject Filter
+      if (selectedSubject !== "all" && s.subject !== selectedSubject) {
+        return false;
+      }
+
+      // 2. Grade Filter
+      if (selectedGrade !== "all" && s.grade !== selectedGrade) {
+        return false;
+      }
+
+      // 3. Pass / Fail Filter
+      if (passFailStatus === "pass" && s.pct < 40) return false;
+      if (passFailStatus === "fail" && s.pct >= 40) return false;
+
+      // 4. Search query
+      if (searchText.trim()) {
+        const q = searchText.toLowerCase().trim();
+        const matches =
+          s.studentName.toLowerCase().includes(q) ||
+          s.indexNo.toLowerCase().includes(q) ||
+          s.subject.toLowerCase().includes(q) ||
+          s.examTitle.toLowerCase().includes(q);
+
+        if (!matches) return false;
+      }
+
+      return true;
+    });
+  }, [studentPerformanceList, searchText, selectedSubject, selectedGrade, passFailStatus]);
+
+  const resetFilters = () => {
+    setSearchText("");
+    setSelectedSubject("all");
+    setSelectedGrade("all");
+    setPassFailStatus("all");
+  };
 
   const columns = [
     {
@@ -101,20 +141,19 @@ const TeacherStudentPerformanceCard = ({ examResults = [] }) => {
       ),
     },
     {
-      title: "Marks & Score",
-      key: "marks",
-      sorter: (a, b) => a.pct - b.pct,
+      title: "Score & Percentage",
+      key: "score",
       render: (_, record) => (
-        <div style={{ minWidth: "120px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-            <Text strong>{record.marks} / {record.totalMarks}</Text>
+        <div style={{ width: "140px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "2px" }}>
+            <span>{record.marks}/{record.totalMarks}</span>
             <Text type="secondary">{record.pct}%</Text>
           </div>
           <Progress
             percent={record.pct}
-            showInfo={false}
-            strokeColor={record.pct >= 50 ? "#10B981" : "#EF4444"}
             size="small"
+            status={record.pct >= 40 ? "normal" : "exception"}
+            showInfo={false}
           />
         </div>
       ),
@@ -146,27 +185,21 @@ const TeacherStudentPerformanceCard = ({ examResults = [] }) => {
     },
   ];
 
+  const hasFilters =
+    searchText || selectedSubject !== "all" || selectedGrade !== "all" || passFailStatus !== "all";
+
   return (
     <Card
       title={
-        <Row justify="space-between" align="middle" gutter={[16, 16]}>
-          <Col>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <UserOutlined style={{ color: themeToken.colorPrimary }} />
-              <span>Student Performance & Exam Marks</span>
-            </div>
-          </Col>
-          <Col>
-            <Input
-              placeholder="Search student name..."
-              prefix={<SearchOutlined style={{ color: themeToken.colorTextSecondary }} />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 240 }}
-              allowClear
-            />
-          </Col>
-        </Row>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <UserOutlined style={{ color: themeToken.colorPrimary }} />
+            <span>Student Performance & Exam Marks</span>
+          </div>
+          <Text type="secondary" style={{ fontSize: "12px", fontWeight: "normal" }}>
+            Showing: {filteredList.length} of {studentPerformanceList.length} results
+          </Text>
+        </div>
       }
       bordered={false}
       style={{
@@ -175,12 +208,71 @@ const TeacherStudentPerformanceCard = ({ examResults = [] }) => {
         boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
       }}
     >
+      {/* Analytics Filter Bar */}
+      <Row gutter={[10, 10]} style={{ marginBottom: "16px" }}>
+        <Col xs={24} sm={10} md={8}>
+          <Input
+            placeholder="Search student name, ID, exam..."
+            prefix={<SearchOutlined style={{ color: themeToken.colorTextSecondary }} />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+          />
+        </Col>
+        <Col xs={12} sm={7} md={5}>
+          <Select
+            style={{ width: "100%" }}
+            value={selectedSubject}
+            onChange={(val) => setSelectedSubject(val)}
+          >
+            <Option value="all">All Subjects</Option>
+            {uniqueSubjects.map((subj) => (
+              <Option key={subj} value={subj}>
+                {subj}
+              </Option>
+            ))}
+          </Select>
+        </Col>
+        <Col xs={12} sm={7} md={5}>
+          <Select
+            style={{ width: "100%" }}
+            value={selectedGrade}
+            onChange={(val) => setSelectedGrade(val)}
+          >
+            <Option value="all">All Letter Grades</Option>
+            <Option value="A">Grade A (75-100%)</Option>
+            <Option value="B">Grade B (65-74%)</Option>
+            <Option value="C">Grade C (55-64%)</Option>
+            <Option value="S">Grade S (40-54%)</Option>
+            <Option value="F">Grade F (&lt;40%)</Option>
+          </Select>
+        </Col>
+        <Col xs={12} sm={6} md={4}>
+          <Select
+            style={{ width: "100%" }}
+            value={passFailStatus}
+            onChange={(val) => setPassFailStatus(val)}
+          >
+            <Option value="all">Pass / Fail All</Option>
+            <Option value="pass">Passed (&ge;40%)</Option>
+            <Option value="fail">Failed (&lt;40%)</Option>
+          </Select>
+        </Col>
+        <Col xs={12} sm={4} md={2} style={{ textAlign: "right" }}>
+          {hasFilters && (
+            <Button icon={<ReloadOutlined />} onClick={resetFilters} type="text" danger>
+              Reset
+            </Button>
+          )}
+        </Col>
+      </Row>
+
       <Table
         dataSource={filteredList}
         columns={columns}
         pagination={{ pageSize: 5 }}
         size="small"
-        locale={{ emptyText: "No student exam performance records available." }}
+        locale={{ emptyText: "No student exam performance records found." }}
       />
     </Card>
   );

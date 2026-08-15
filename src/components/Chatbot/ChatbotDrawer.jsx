@@ -26,10 +26,11 @@ const ChatbotDrawer = ({ open, onClose }) => {
   };
 
   useEffect(() => {
-    if (open && user?._id) {
+    const userId = user?._id || user?.id;
+    if (userId) {
       loadHistory();
     }
-  }, [open, user?._id]);
+  }, [open, user?._id, user?.id]);
 
   useEffect(() => {
     if (open && activeTab === "chat") {
@@ -41,8 +42,8 @@ const ChatbotDrawer = ({ open, onClose }) => {
     try {
       setLoading(true);
       const res = await chatbotAPI.getHistory();
-      const rawLogs = res.data || res || [];
-      if (Array.isArray(rawLogs) && rawLogs.length > 0) {
+      const rawLogs = Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : [];
+      if (rawLogs.length > 0) {
         setRawHistoryLogs(rawLogs);
         const formatted = [];
         rawLogs.forEach((log) => {
