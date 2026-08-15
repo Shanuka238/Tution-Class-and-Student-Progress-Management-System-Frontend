@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
-import { Card, Tag, Empty, message, theme, Spin, Row, Col, Button, Space, Segmented } from "antd";
-import { ClockCircleOutlined, UserOutlined, EnvironmentOutlined, BookOutlined, LeftOutlined, RightOutlined, ReloadOutlined } from "@ant-design/icons";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { Card, Tag, Empty, message, theme, Spin, Row, Col, Button, Space, Segmented, Input, Select } from "antd";
+import { ClockCircleOutlined, UserOutlined, EnvironmentOutlined, BookOutlined, LeftOutlined, RightOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import { DAYS_OF_WEEK } from "../../enums/dateTime";
 
@@ -100,14 +100,49 @@ const WeeklyTimetable = () => {
     };
   };
 
+  const [searchFilter, setSearchFilter] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState("all");
+
+  // Extract unique subjects for dropdown filter
+  const uniqueSubjects = useMemo(() => {
+    const set = new Set();
+    (classes || []).forEach((cls) => {
+      const subj = cls.subject || cls.course_id?.subject || cls.course_id?.class_name;
+      if (subj) set.add(subj);
+    });
+    return Array.from(set);
+  }, [classes]);
+
   const getClassesForDay = (dayIndex) => {
     return (classes || [])
-      .filter(cls => {
+      .filter((cls) => {
         if (!cls.date) return false;
+
+        // 1. Day of Week Filter
         const classDate = new Date(cls.date);
         const dayOfWeek = classDate.getDay();
-        const classDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; 
-        return classDay === dayIndex;
+        const classDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        if (classDay !== dayIndex) return false;
+
+        // 2. Subject Filter
+        const subj = cls.subject || cls.course_id?.subject || cls.course_id?.class_name || "";
+        if (subjectFilter !== "all" && subj !== subjectFilter) {
+          return false;
+        }
+
+        // 3. Search Filter
+        if (searchFilter.trim()) {
+          const q = searchFilter.toLowerCase().trim();
+          const title = (cls.class_name || cls.course_id?.class_name || "").toLowerCase();
+          const venue = (cls.venue || "").toLowerCase();
+          const teacher = (cls.teacher_name || cls.teacher_id?.user_id?.first_name || "").toLowerCase();
+
+          if (!title.includes(q) && !subj.toLowerCase().includes(q) && !venue.includes(q) && !teacher.includes(q)) {
+            return false;
+          }
+        }
+
+        return true;
       })
       .sort((a, b) => {
         const timeA = a.start_time || "";
@@ -201,18 +236,55 @@ const WeeklyTimetable = () => {
             </Tag>
           </Space>
 
-          <Space size="middle" wrap>
-            <span style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>View:</span>
-            <Segmented
-              value={viewMode}
-              onChange={setViewMode}
-              options={[
-                { label: "All Days", value: "current" },
-                { label: "Weekdays Only", value: "weekdays" },
-                { label: "Weekends Only", value: "weekends" },
-              ]}
-              style={{ borderRadius: "6px" }}
-            />
+          <Space size="middle" wrap style={{ width: "100%", justifyContent: "space-between" }}>
+            <Space size="middle" wrap>
+              <span style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>View:</span>
+              <Segmented
+                value={viewMode}
+                onChange={setViewMode}
+                options={[
+                  { label: "All Days", value: "current" },
+                  { label: "Weekdays Only", value: "weekdays" },
+                  { label: "Weekends Only", value: "weekends" },
+                ]}
+                style={{ borderRadius: "6px" }}
+              />
+            </Space>
+
+            <Space size="small" wrap>
+              <Input
+                prefix={<SearchOutlined style={{ color: "#9CA3AF" }} />}
+                placeholder="Search class, venue, teacher..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                allowClear
+                style={{ width: 220 }}
+              />
+              <Select
+                value={subjectFilter}
+                onChange={(val) => setSubjectFilter(val)}
+                style={{ width: 160 }}
+              >
+                <Select.Option value="all">All Subjects</Select.Option>
+                {uniqueSubjects.map((s) => (
+                  <Select.Option key={s} value={s}>
+                    {s}
+                  </Select.Option>
+                ))}
+              </Select>
+              {(searchFilter || subjectFilter !== "all") && (
+                <Button
+                  type="text"
+                  danger
+                  onClick={() => {
+                    setSearchFilter("");
+                    setSubjectFilter("all");
+                  }}
+                >
+                  Reset
+                </Button>
+              )}
+            </Space>
           </Space>
 
           <div style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>

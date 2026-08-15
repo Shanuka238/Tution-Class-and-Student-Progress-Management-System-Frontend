@@ -91,10 +91,29 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
       key: "status",
       render: (_, record) => {
         const isMarked = markedMap[record._id];
+        const statusColors = { scheduled: "blue", held: "green", cancelled: "red" };
+        let st = record.status || "scheduled";
+
+        if (st !== "cancelled" && record.date) {
+          const sDate = dayjs(record.date).startOf("day");
+          const today = dayjs().startOf("day");
+          if (sDate.isBefore(today)) {
+            st = "held";
+          } else if (sDate.isAfter(today)) {
+            st = "scheduled";
+          } else if (record.end_time) {
+            const [h, m] = String(record.end_time).split(":").map(Number);
+            if (!isNaN(h)) {
+              const endTime = dayjs().hour(h).minute(m || 0).second(0);
+              st = dayjs().isAfter(endTime) ? "held" : "scheduled";
+            }
+          }
+        }
+
         return (
           <Space>
-            <Tag color={record.status === "held" ? "green" : "red"}>
-              {record.status.toUpperCase()}
+            <Tag color={statusColors[st] || "blue"}>
+              {st.toUpperCase()}
             </Tag>
             {isMarked ? (
               <Tag color="success">Marked ✓</Tag>

@@ -10,6 +10,7 @@ import StudentDashboardPage from "./pages/StudentDashboardPage";
 import ParentDashboardPage from "./pages/ParentDashboardPage";
 import { Unauthorized, NotFound } from "./pages/ErrorPages";
 import "./App.css";
+import "./utils/toast.jsx";
 import { useAuth } from "./context/AuthContext";
 
 // Role-based redirect component

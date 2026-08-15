@@ -1,13 +1,35 @@
-import { useEffect, useState, useCallback } from "react";
-import { Table, Button, Tag, message, Typography, theme, Popconfirm, Space } from "antd";
-import { PlusOutlined, CalendarOutlined, TeamOutlined, DeleteOutlined } from "@ant-design/icons";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import {
+  Table,
+  Button,
+  Tag,
+  Input,
+  Select,
+  Row,
+  Col,
+  Card,
+  message,
+  Typography,
+  theme,
+  Popconfirm,
+  Space,
+} from "antd";
+import {
+  PlusOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import ClassModal from "./ClassModal";
 import EnrollDrawer from "./EnrollDrawer";
 import SessionList from "./SessionList";
 import dayjs from "dayjs";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 const ClassList = () => {
   const { token: themeToken } = theme.useToken();
@@ -16,9 +38,14 @@ const ClassList = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
-  const [expandedRows, setExpandedRows] = useState(new Set());
   const [sessionListVisible, setSessionListVisible] = useState(false);
   const [selectedCourseForSessions, setSelectedCourseForSessions] = useState(null);
+
+  // Filters
+  const [searchText, setSearchText] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("all");
+  const [selectedGrade, setSelectedGrade] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
   const canManage = user.role === "admin";
@@ -28,7 +55,7 @@ const ClassList = () => {
     setLoading(true);
     try {
       const response = await classAPI.getActiveClasses();
-      setClasses(response.data || response);
+      setClasses(response.data || response || []);
     } catch (error) {
       console.error("Error fetching classes:", error);
       message.error(error.message || "Failed to load class timetable data");
@@ -57,26 +84,56 @@ const ClassList = () => {
     }
   };
 
-  const handleDropStudent = async (studentId, classId, studentName) => {
-    try {
-      await classAPI.dropStudent(studentId, classId);
-      message.success(`${studentName} has been removed from the class`);
-      fetchClasses();
-    } catch (error) {
-      console.error("Error removing student:", error);
-      message.error(error.message || "Failed to remove student from class");
-    }
+  const resetFilters = () => {
+    setSearchText("");
+    setSelectedSubject("all");
+    setSelectedGrade("all");
+    setSelectedStatus("all");
   };
 
-  const toggleEnrolledStudents = (classId) => {
-    const newExpanded = new Set(expandedRows);
-    if (newExpanded.has(classId)) {
-      newExpanded.delete(classId);
-    } else {
-      newExpanded.add(classId);
-    }
-    setExpandedRows(newExpanded);
-  };
+  // Unique subjects list for filter dropdown
+  const uniqueSubjects = useMemo(() => {
+    const set = new Set();
+    classes.forEach((c) => {
+      if (c.subject) set.add(c.subject);
+    });
+    return Array.from(set);
+  }, [classes]);
+
+  // Filtered dataset
+  const filteredClasses = useMemo(() => {
+    return classes.filter((item) => {
+      // 1. Subject Filter
+      if (selectedSubject !== "all" && item.subject !== selectedSubject) {
+        return false;
+      }
+
+      // 2. Grade Filter
+      if (selectedGrade !== "all" && String(item.grade) !== String(selectedGrade)) {
+        return false;
+      }
+
+      // 3. Status Filter
+      if (selectedStatus !== "all") {
+        const isActiveStr = item.is_active ? "active" : "archived";
+        if (isActiveStr !== selectedStatus) return false;
+      }
+
+      // 4. Search text (Class name, Subject, Grade)
+      if (searchText.trim()) {
+        const q = searchText.toLowerCase().trim();
+        const className = (item.class_name || "").toLowerCase();
+        const subject = (item.subject || "").toLowerCase();
+        const grade = String(item.grade || "").toLowerCase();
+
+        if (!className.includes(q) && !subject.includes(q) && !grade.includes(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [classes, searchText, selectedSubject, selectedGrade, selectedStatus]);
 
   const columns = [
     {
@@ -84,8 +141,12 @@ const ClassList = () => {
       key: "class_details",
       render: (_, record) => (
         <div>
-          <div><strong>{record.class_name}</strong></div>
-          <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>{record.subject} • Grade {record.grade}</div>
+          <div>
+            <strong>{record.class_name}</strong>
+          </div>
+          <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
+            {record.subject} • Grade {record.grade}
+          </div>
         </div>
       ),
     },
@@ -95,7 +156,9 @@ const ClassList = () => {
       render: (_, record) => (
         <div style={{ fontSize: "13px" }}>
           <div>Start: {record.start_date ? dayjs(record.start_date).format("MMM DD, YYYY") : "N/A"}</div>
-          <div style={{ color: themeToken.colorTextSecondary }}>End: {record.end_date ? dayjs(record.end_date).format("MMM DD, YYYY") : "N/A"}</div>
+          <div style={{ color: themeToken.colorTextSecondary }}>
+            End: {record.end_date ? dayjs(record.end_date).format("MMM DD, YYYY") : "N/A"}
+          </div>
         </div>
       ),
     },
@@ -145,7 +208,7 @@ const ClassList = () => {
           {canManage && (
             <Popconfirm
               title="Delete Class"
-              description={`Are you sure you want to delete "${record.class_name}"? This will also remove all student enrollments for this class.`}
+              description={`Are you sure you want to delete "${record.class_name}"?`}
               onConfirm={() => handleDeleteClass(record._id, record.class_name)}
               okText="Yes, Delete"
               cancelText="Cancel"
@@ -164,15 +227,27 @@ const ClassList = () => {
     },
   ];
 
+  const hasActiveFilters =
+    searchText || selectedSubject !== "all" || selectedGrade !== "all" || selectedStatus !== "all";
+
   return (
-    <div style={{
-      padding: "24px",
-      background: themeToken.colorBgContainer,
-      borderRadius: "8px",
-      border: `1px solid ${themeToken.colorBorderSecondary}`
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
-        <Title level={3} style={{ margin: 0, color: themeToken.colorText }}>Class Schedule & Timetables</Title>
+    <div
+      style={{
+        padding: "24px",
+        background: themeToken.colorBgContainer,
+        borderRadius: "8px",
+        border: `1px solid ${themeToken.colorBorderSecondary}`,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <div>
+          <Title level={3} style={{ margin: 0, color: themeToken.colorText }}>
+            Class Schedule & Timetables
+          </Title>
+          <Text type="secondary" style={{ fontSize: "13px" }}>
+            Total Classes: {classes.length} | Showing: {filteredClasses.length} records
+          </Text>
+        </div>
         {canManage && (
           <Button
             type="primary"
@@ -184,82 +259,120 @@ const ClassList = () => {
         )}
       </div>
 
+      {/* Filter Toolbar */}
+      <Card
+        size="small"
+        style={{
+          marginBottom: "20px",
+          background: themeToken.colorBgLayout,
+          borderRadius: "8px",
+          border: `1px solid ${themeToken.colorBorderSecondary}`,
+        }}
+      >
+        <Row gutter={[12, 12]} align="middle">
+          {/* Search */}
+          <Col xs={24} sm={12} md={8}>
+            <Input
+              prefix={<SearchOutlined style={{ color: "#9CA3AF" }} />}
+              placeholder="Search by Class Name, Subject, Grade..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+            />
+          </Col>
+
+          {/* Subject Filter */}
+          <Col xs={12} sm={6} md={5}>
+            <Select
+              style={{ width: "100%" }}
+              value={selectedSubject}
+              onChange={(val) => setSelectedSubject(val)}
+            >
+              <Option value="all">All Subjects</Option>
+              {uniqueSubjects.map((subj) => (
+                <Option key={subj} value={subj}>
+                  {subj}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+
+          {/* Grade Filter */}
+          <Col xs={12} sm={6} md={4}>
+            <Select
+              style={{ width: "100%" }}
+              value={selectedGrade}
+              onChange={(val) => setSelectedGrade(val)}
+            >
+              <Option value="all">All Grades</Option>
+              {["6", "7", "8", "9", "10", "11", "12"].map((g) => (
+                <Option key={g} value={g}>
+                  Grade {g}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+
+          {/* Status Filter */}
+          <Col xs={12} sm={6} md={4}>
+            <Select
+              style={{ width: "100%" }}
+              value={selectedStatus}
+              onChange={(val) => setSelectedStatus(val)}
+            >
+              <Option value="all">All Statuses</Option>
+              <Option value="active">Active Only</Option>
+              <Option value="archived">Archived Only</Option>
+            </Select>
+          </Col>
+
+          {/* Reset Filters */}
+          <Col xs={12} sm={6} md={3} style={{ textAlign: "right" }}>
+            {hasActiveFilters && (
+              <Button icon={<ReloadOutlined />} onClick={resetFilters} type="text" danger>
+                Reset
+              </Button>
+            )}
+          </Col>
+        </Row>
+      </Card>
+
       <Table
         columns={columns}
-        dataSource={classes}
+        dataSource={filteredClasses}
         rowKey="_id"
         loading={loading}
-        expandable={{
-          expandedRowRender: (record) => (
-            <div>
-              {record.enrolled_count > 0 ? (
-                <Table
-                  columns={[
-                    { title: "Student Number", dataIndex: "student_number" },
-                    { title: "Name", dataIndex: "name" },
-                    { title: "Email", dataIndex: "email" },
-                    {
-                      title: "Action",
-                      key: "action",
-                      render: (_, student) => (
-                        canEnroll && (
-                          <Popconfirm
-                            title="Remove Student"
-                            description={`Are you sure you want to remove ${student.name} from this class?`}
-                            onConfirm={() => handleDropStudent(student.id, record._id, student.name)}
-                            okText="Yes, Remove"
-                            cancelText="Cancel"
-                            okButtonProps={{ danger: true }}
-                          >
-                            <Button
-                              type="text"
-                              danger
-                              size="small"
-                              icon={<DeleteOutlined />}
-                            />
-                          </Popconfirm>
-                        )
-                      ),
-                    },
-                  ]}
-                  dataSource={record.enrolled_students || []}
-                  rowKey="id"
-                  pagination={false}
-                  size="small"
-                />
-              ) : (
-                <p style={{ color: themeToken.colorTextSecondary }}>No students enrolled yet</p>
-              )}
-            </div>
-          ),
-          expandedRowKeys: Array.from(expandedRows),
-          onExpand: (expanded, record) => toggleEnrolledStudents(record._id)
-        }}
       />
 
       <ClassModal
         visible={modalVisible}
         onCancel={() => setModalVisible(false)}
-        onSuccess={() => { setModalVisible(false); fetchClasses(); }}
+        onSuccess={() => {
+          setModalVisible(false);
+          fetchClasses();
+        }}
       />
 
-      {selectedClass && (
-        <EnrollDrawer
-          visible={drawerVisible}
+      <EnrollDrawer
+        visible={drawerVisible}
+        onClose={() => {
+          setDrawerVisible(false);
+          setSelectedClass(null);
+        }}
+        classItem={selectedClass}
+        onSuccess={fetchClasses}
+      />
+
+      {sessionListVisible && (
+        <SessionList
+          visible={sessionListVisible}
           onClose={() => {
-            setDrawerVisible(false);
-            setSelectedClass(null);
+            setSessionListVisible(false);
+            setSelectedCourseForSessions(null);
           }}
-          classData={selectedClass}
-          onEnrollSuccess={() => { setDrawerVisible(false); fetchClasses(); }}
+          course={selectedCourseForSessions}
         />
       )}
-
-      <SessionList
-        visible={sessionListVisible}
-        onClose={() => setSessionListVisible(false)}
-        course={selectedCourseForSessions}
-      />
     </div>
   );
 };

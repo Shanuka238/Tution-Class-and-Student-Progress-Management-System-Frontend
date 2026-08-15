@@ -26,4 +26,8 @@ export const attendanceAPI = {
   async getAttendanceRegister(courseId) {
     return await apiRequest(`${API_URLS.ATTENDANCE}/register/${courseId}`);
   },
+
+  async getAllAttendance() {
+    return await apiRequest(`${API_URLS.ATTENDANCE}/all`);
+  },
 };

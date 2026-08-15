@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Card, Typography, Spin, Space, theme } from "antd";
-import { adminAPI } from "../../services/adminApi";
 import { classAPI } from "../../services/classApi";
 import { feeAPI } from "../../services/feeApi";
+import { attendanceAPI } from "../../services/attendanceApi";
 import AdminRevenueChart from "./AdminRevenueChart";
 import AdminEnrollmentAttendanceChart from "./AdminEnrollmentAttendanceChart";
 
@@ -13,13 +13,15 @@ const AdminAnalyticsView = () => {
   const [loading, setLoading] = useState(true);
   const [classList, setClassList] = useState([]);
   const [feesData, setFeesData] = useState([]);
+  const [attendanceLogs, setAttendanceLogs] = useState([]);
 
   const loadMetrics = useCallback(async () => {
     setLoading(true);
     try {
-      const [classesRes, feesRes] = await Promise.allSettled([
+      const [classesRes, feesRes, attendanceRes] = await Promise.allSettled([
         classAPI.getActiveClasses(),
         feeAPI.getAllFees(),
+        attendanceAPI.getAllAttendance(),
       ]);
 
       const cData = classesRes.status === "fulfilled" ? classesRes.value.data || classesRes.value : [];
@@ -27,6 +29,9 @@ const AdminAnalyticsView = () => {
 
       const fData = feesRes.status === "fulfilled" ? feesRes.value.data || feesRes.value : [];
       setFeesData(Array.isArray(fData) ? fData : []);
+
+      const aData = attendanceRes.status === "fulfilled" ? attendanceRes.value.data || attendanceRes.value : [];
+      setAttendanceLogs(Array.isArray(aData) ? aData : []);
     } catch (err) {
       console.error("Error loading admin analytics:", err);
     } finally {
@@ -56,7 +61,7 @@ const AdminAnalyticsView = () => {
       ) : (
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <AdminRevenueChart feesList={feesData} />
-          <AdminEnrollmentAttendanceChart classList={classList} />
+          <AdminEnrollmentAttendanceChart classList={classList} attendanceLogs={attendanceLogs} />
         </Space>
       )}
     </div>
