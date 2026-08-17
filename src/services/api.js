@@ -118,6 +118,20 @@ export const authAPI = {
     return data;
   },
 
+  async updateProfile(profileData) {
+    return await apiRequest(API_URLS.AUTH.UPDATE_PROFILE, {
+      method: "PUT",
+      body: profileData,
+    });
+  },
+
+  async changePassword({ currentPassword, newPassword }) {
+    return await apiRequest(API_URLS.AUTH.CHANGE_PASSWORD, {
+      method: "PUT",
+      body: { currentPassword, newPassword },
+    });
+  },
+
   logout() {
     removeToken();
   },

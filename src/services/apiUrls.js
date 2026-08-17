@@ -3,6 +3,8 @@ export const API_URLS = {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
     ME: "/auth/me",
+    UPDATE_PROFILE: "/auth/profile",
+    CHANGE_PASSWORD: "/auth/change-password",
     UPLOAD_PROFILE_IMAGE: "/auth/profile-image",
   },
   ADMIN: {
