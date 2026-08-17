@@ -3,6 +3,7 @@
   border-radius: 16px;
   overflow: hidden;
   padding: 0 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .profile-modal .ant-modal-body {
@@ -16,6 +17,7 @@
 .profile-modal .ant-modal-close {
   top: 12px;
   right: 12px;
+  z-index: 10;
 }
 
 /* Loading */
@@ -29,6 +31,30 @@
 /* Content Wrapper */
 .profile-content {
   padding: 32px 28px;
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Subpage Content Wrapper */
+.profile-subpage-content {
+  padding: 24px 26px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.profile-subpage-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 18px;
+}
+
+.profile-back-btn {
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Top Section */

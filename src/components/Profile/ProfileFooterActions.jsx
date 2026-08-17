@@ -1,13 +1,13 @@
 import { Button } from "antd";
 import { EditOutlined, LockOutlined } from "@ant-design/icons";
 
-const ProfileFooterActions = () => {
+const ProfileFooterActions = ({ onEdit, onChangePassword }) => {
   return (
     <div className="profile-footer">
-      <Button type="primary" icon={<EditOutlined />} block>
+      <Button type="primary" icon={<EditOutlined />} onClick={onEdit} block>
         Edit Profile
       </Button>
-      <Button icon={<LockOutlined />} block>
+      <Button icon={<LockOutlined />} onClick={onChangePassword} block>
         Change Password
       </Button>
     </div>

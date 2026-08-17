@@ -7,6 +7,8 @@ import ProfileHeader from "./ProfileHeader";
 import ProfileCommonDetails from "./ProfileCommonDetails";
 import ProfileRoleFields from "./ProfileRoleFields";
 import ProfileFooterActions from "./ProfileFooterActions";
+import ProfileEditView from "./ProfileEditView";
+import ChangePasswordView from "./ChangePasswordView";
 
 const { Text } = Typography;
 
@@ -15,9 +17,11 @@ function ProfileModal({ visible, onCancel }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [activeView, setActiveView] = useState("view"); // "view" | "edit" | "password"
 
   useEffect(() => {
     if (visible) {
+      setActiveView("view");
       fetchUserProfile();
     }
   }, [visible]);
@@ -71,39 +75,76 @@ function ProfileModal({ visible, onCancel }) {
     return false;
   };
 
+  const handleProfileUpdated = (updatedUser, updatedProfile) => {
+    if (updatedUser) setUser(updatedUser);
+    if (updatedProfile) setProfile(updatedProfile);
+    fetchUserProfile();
+  };
+
+  const handleClose = () => {
+    setActiveView("view");
+    onCancel();
+  };
+
   return (
     <Modal
       title={null}
       open={visible}
-      onCancel={onCancel}
+      onCancel={handleClose}
       footer={null}
-      width={360}
+      width={activeView === "edit" ? 420 : 360}
       centered
       className="profile-modal"
       styles={{ body: { padding: 0 } }}
+      destroyOnClose
     >
       {loading ? (
         <div className="profile-loading">
           <Spin size="large" />
         </div>
       ) : user ? (
-        <div className="profile-content">
-          {/* Top Section - Avatar & Name */}
-          <ProfileHeader
-            user={user}
-            uploading={uploading}
-            handleProfileImageUpload={handleProfileImageUpload}
-          />
+        <>
+          {/* Main Profile View */}
+          {activeView === "view" && (
+            <div className="profile-content">
+              {/* Top Section - Avatar & Name */}
+              <ProfileHeader
+                user={user}
+                uploading={uploading}
+                handleProfileImageUpload={handleProfileImageUpload}
+              />
 
-          {/* Details List */}
-          <div className="profile-details">
-            <ProfileCommonDetails user={user} />
-            <ProfileRoleFields user={user} profile={profile} />
-          </div>
+              {/* Details List */}
+              <div className="profile-details">
+                <ProfileCommonDetails user={user} />
+                <ProfileRoleFields user={user} profile={profile} />
+              </div>
 
-          {/* Actions */}
-          <ProfileFooterActions />
-        </div>
+              {/* Actions */}
+              <ProfileFooterActions
+                onEdit={() => setActiveView("edit")}
+                onChangePassword={() => setActiveView("password")}
+              />
+            </div>
+          )}
+
+          {/* In-place Sub-Page: Edit Profile */}
+          {activeView === "edit" && (
+            <ProfileEditView
+              user={user}
+              profile={profile}
+              onBack={() => setActiveView("view")}
+              onProfileUpdated={handleProfileUpdated}
+            />
+          )}
+
+          {/* In-place Sub-Page: Change Password */}
+          {activeView === "password" && (
+            <ChangePasswordView
+              onBack={() => setActiveView("view")}
+            />
+          )}
+        </>
       ) : (
         <div className="profile-loading">
           <Text type="secondary">Failed to load profile</Text>
