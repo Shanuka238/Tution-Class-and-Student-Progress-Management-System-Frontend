@@ -164,7 +164,11 @@ function ProfileEditView({ user, profile, onBack, onProfileUpdated }) {
             </Form.Item>
 
             <Form.Item name="date_of_birth" label="Date of Birth" style={{ marginBottom: 12 }}>
-              <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
+              <DatePicker
+                style={{ width: "100%" }}
+                format="YYYY-MM-DD"
+                disabledDate={(current) => current && current > dayjs().endOf("day")}
+              />
             </Form.Item>
 
             <Form.Item name="emergency_contact" label="Emergency Contact" style={{ marginBottom: 12 }}>

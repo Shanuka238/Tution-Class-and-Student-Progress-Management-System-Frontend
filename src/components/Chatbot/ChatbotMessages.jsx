@@ -51,7 +51,7 @@ const ChatbotMessages = ({ messages, loading, messagesEndRef }) => {
             <Avatar
               size="small"
               icon={<RobotOutlined />}
-              style={{ background: "#8B5CF6", marginTop: "2px", flexShrink: 0 }}
+              style={{ background: "#4F46E5", marginTop: "2px", flexShrink: 0 }}
             />
           )}
           <div
@@ -61,7 +61,7 @@ const ChatbotMessages = ({ messages, loading, messagesEndRef }) => {
               borderRadius: msg.sender === "user" ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
               background:
                 msg.sender === "user"
-                  ? "linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)"
+                  ? themeToken.colorPrimary
                   : themeToken.colorBgContainer,
               color: msg.sender === "user" ? "#fff" : themeToken.colorText,
               border: msg.sender === "user" ? "none" : `1px solid ${themeToken.colorBorderSecondary}`,
@@ -76,7 +76,7 @@ const ChatbotMessages = ({ messages, loading, messagesEndRef }) => {
             <Avatar
               size="small"
               icon={<UserOutlined />}
-              style={{ background: "#3B82F6", marginTop: "2px", flexShrink: 0 }}
+              style={{ background: "#4F46E5", marginTop: "2px", flexShrink: 0 }}
             />
           )}
         </div>

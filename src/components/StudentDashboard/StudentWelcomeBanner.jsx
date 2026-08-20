@@ -12,9 +12,10 @@ const StudentWelcomeBanner = ({ user }) => {
       bordered={false}
       style={{
         borderRadius: "16px",
-        background: `linear-gradient(135deg, ${themeToken.colorPrimary}15 0%, ${themeToken.colorPrimary}05 100%)`,
-        border: `1px solid ${themeToken.colorPrimary}30`,
-        boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+        background: themeToken.colorBgContainer,
+        border: `1px solid ${themeToken.colorBorderSecondary}`,
+        borderLeft: `4px solid ${themeToken.colorPrimary}`,
+        boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
       }}
     >
       <div
