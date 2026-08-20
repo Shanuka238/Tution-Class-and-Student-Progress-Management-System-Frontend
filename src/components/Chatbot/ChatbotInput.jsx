@@ -30,7 +30,7 @@ const ChatbotInput = ({ value, onChange, onSend, loading }) => {
         onClick={() => onSend()}
         loading={loading}
         style={{
-          background: "linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)",
+          background: "#4F46E5",
           border: "none",
           flexShrink: 0,
         }}

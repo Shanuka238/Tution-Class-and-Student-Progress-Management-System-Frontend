@@ -209,7 +209,10 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
                 </Select>
               </Form.Item>
               <Form.Item name="date_of_birth" label="Date of Birth" rules={[{ required: true }]}>
-                <DatePicker style={{ width: "100%" }} />
+                <DatePicker
+                  style={{ width: "100%" }}
+                  disabledDate={(current) => current && current > dayjs().endOf("day")}
+                />
               </Form.Item>
               <Form.Item name="address" label="Home Postal Address" style={{ gridColumn: "span 2" }}>
                 <Input.TextArea rows={2} />

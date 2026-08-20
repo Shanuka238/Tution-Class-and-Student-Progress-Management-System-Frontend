@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, Form, Select, InputNumber, DatePicker, Button, Space } from "antd";
+import dayjs from "dayjs";
 
 const BillingModal = ({ visible, onCancel, onFinish, classes }) => {
   const [form] = Form.useForm();
@@ -71,7 +72,11 @@ const BillingModal = ({ visible, onCancel, onFinish, classes }) => {
           label="Payment Due Date"
           rules={[{ required: true, message: "Please select payment due date" }]}
         >
-          <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" />
+          <DatePicker
+            style={{ width: "100%" }}
+            format="YYYY-MM-DD"
+            disabledDate={(current) => current && current < dayjs().startOf("day")}
+          />
         </Form.Item>
 
         <Form.Item style={{ display: "flex", justifyContent: "flex-end", marginBottom: 0 }}>

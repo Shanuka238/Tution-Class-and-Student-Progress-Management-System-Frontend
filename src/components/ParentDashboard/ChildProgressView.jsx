@@ -95,9 +95,10 @@ const ChildProgressView = ({
         bordered={false}
         style={{
           borderRadius: "16px",
-          background: `linear-gradient(135deg, ${growthBadge?.color || themeToken.colorPrimary}15 0%, ${themeToken.colorBgContainer} 100%)`,
-          border: `1px solid ${growthBadge?.color || themeToken.colorPrimary}30`,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+          background: themeToken.colorBgContainer,
+          border: `1px solid ${themeToken.colorBorderSecondary}`,
+          borderLeft: `4px solid ${growthBadge?.color || themeToken.colorPrimary}`,
+          boxShadow: "0 2px 10px rgba(0,0,0,0.03)",
         }}
       >
         <Row gutter={[24, 24]} align="middle">

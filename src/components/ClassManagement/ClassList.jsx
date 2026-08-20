@@ -13,6 +13,8 @@ import {
   theme,
   Popconfirm,
   Space,
+  Progress,
+  Empty,
 } from "antd";
 import {
   PlusOutlined,
@@ -21,6 +23,8 @@ import {
   DeleteOutlined,
   SearchOutlined,
   ReloadOutlined,
+  UserAddOutlined,
+  UserDeleteOutlined,
 } from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import ClassModal from "./ClassModal";
@@ -40,6 +44,7 @@ const ClassList = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [sessionListVisible, setSessionListVisible] = useState(false);
   const [selectedCourseForSessions, setSelectedCourseForSessions] = useState(null);
+  const [droppingStudentId, setDroppingStudentId] = useState(null);
 
   // Filters
   const [searchText, setSearchText] = useState("");
@@ -81,6 +86,20 @@ const ClassList = () => {
     } catch (error) {
       console.error("Error deleting class:", error);
       message.error(error.message || "Failed to delete class");
+    }
+  };
+
+  const handleDropStudent = async (studentId, classId) => {
+    setDroppingStudentId(studentId);
+    try {
+      await classAPI.dropStudent(studentId, classId);
+      message.success("Student removed from class successfully");
+      await fetchClasses();
+    } catch (error) {
+      console.error("Error dropping student:", error);
+      message.error(error.message || "Failed to drop student from class");
+    } finally {
+      setDroppingStudentId(null);
     }
   };
 
@@ -141,8 +160,8 @@ const ClassList = () => {
       key: "class_details",
       render: (_, record) => (
         <div>
-          <div>
-            <strong>{record.class_name}</strong>
+          <div style={{ fontWeight: 600, fontSize: "14px" }}>
+            {record.class_name}
           </div>
           <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
             {record.subject} • Grade {record.grade}
@@ -165,11 +184,27 @@ const ClassList = () => {
     {
       title: "Enrollment Capacity",
       key: "capacity",
-      render: (_, record) => (
-        <div>
-          <TeamOutlined /> Max: {record.max_students}
-        </div>
-      ),
+      render: (_, record) => {
+        const enrolled = record.enrolled_count ?? (record.enrolled_students?.length || 0);
+        const max = record.max_students || 30;
+        const pct = Math.min(Math.round((enrolled / max) * 100), 100);
+        const isFull = enrolled >= max;
+
+        return (
+          <div style={{ minWidth: 140 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+              <span style={{ fontSize: "13px", fontWeight: 600 }}>
+                <TeamOutlined style={{ marginRight: 6, color: "#4F46E5" }} />
+                {enrolled} / {max}
+              </span>
+              <Tag color={isFull ? "error" : pct >= 80 ? "warning" : "success"} style={{ marginRight: 0 }}>
+                {isFull ? "Full" : `${max - enrolled} left`}
+              </Tag>
+            </div>
+            <Progress percent={pct} size="small" showInfo={false} strokeColor={isFull ? "#EF4444" : "#4F46E5"} />
+          </div>
+        );
+      },
     },
     {
       title: "Status",
@@ -190,7 +225,9 @@ const ClassList = () => {
             <Button
               type="primary"
               size="small"
+              icon={<UserAddOutlined />}
               onClick={() => handleEnrollStudents(record)}
+              style={{ background: "#4F46E5" }}
             >
               Enroll Students
             </Button>
@@ -227,6 +264,136 @@ const ClassList = () => {
     },
   ];
 
+  // Expandable row rendering enrolled students list
+  const expandedRowRender = (record) => {
+    const students = record.enrolled_students || [];
+
+    const studentColumns = [
+      {
+        title: "Student No.",
+        dataIndex: "student_number",
+        key: "student_number",
+        width: 140,
+        render: (num) => <Tag color="blue">{num || "N/A"}</Tag>,
+      },
+      {
+        title: "Student Full Name",
+        dataIndex: "name",
+        key: "name",
+        render: (text) => <Text strong>{text || "Student"}</Text>,
+      },
+      {
+        title: "Email Address",
+        dataIndex: "email",
+        key: "email",
+        render: (text) => <Text type="secondary">{text || "N/A"}</Text>,
+      },
+      ...(canManage
+        ? [
+            {
+              title: "Action",
+              key: "action",
+              width: 100,
+              render: (_, studentRecord) => (
+                <Popconfirm
+                  title="Remove Student"
+                  description={`Are you sure you want to remove ${studentRecord.name || "this student"} from "${record.class_name}"?`}
+                  onConfirm={() =>
+                    handleDropStudent(
+                      studentRecord.id || studentRecord._id,
+                      record._id || record.class_id
+                    )
+                  }
+                  okText="Yes, Remove"
+                  okType="danger"
+                >
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<UserDeleteOutlined />}
+                    loading={droppingStudentId === (studentRecord.id || studentRecord._id)}
+                  >
+                    Drop
+                  </Button>
+                </Popconfirm>
+              ),
+            },
+          ]
+        : []),
+    ];
+
+    return (
+      <div
+        style={{
+          padding: "16px 20px",
+          background: themeToken.colorBgLayout,
+          borderRadius: "8px",
+          border: `1px solid ${themeToken.colorBorderSecondary}`,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "12px",
+          }}
+        >
+          <div>
+            <Text strong style={{ fontSize: "14px", color: themeToken.colorText }}>
+              👥 Enrolled Students Roster ({students.length} / {record.max_students || 30})
+            </Text>
+            <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
+              Class: {record.class_name} • Grade {record.grade}
+            </div>
+          </div>
+
+          {canEnroll && (
+            <Button
+              type="primary"
+              size="small"
+              icon={<UserAddOutlined />}
+              onClick={() => handleEnrollStudents(record)}
+              style={{ background: "#4F46E5" }}
+            >
+              + Enroll Students
+            </Button>
+          )}
+        </div>
+
+        {students.length > 0 ? (
+          <Table
+            columns={studentColumns}
+            dataSource={students}
+            rowKey={(s) => s.id || s._id || s.student_number}
+            pagination={false}
+            size="small"
+            bordered
+          />
+        ) : (
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <span>
+                No students currently enrolled in this class.{" "}
+                {canEnroll && (
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() => handleEnrollStudents(record)}
+                  >
+                    Enroll Students Now
+                  </Button>
+                )}
+              </span>
+            }
+          />
+        )}
+      </div>
+    );
+  };
+
   const hasActiveFilters =
     searchText || selectedSubject !== "all" || selectedGrade !== "all" || selectedStatus !== "all";
 
@@ -253,6 +420,7 @@ const ClassList = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setModalVisible(true)}
+            style={{ background: "#4F46E5" }}
           >
             Schedule New Class
           </Button>
@@ -305,7 +473,7 @@ const ClassList = () => {
               onChange={(val) => setSelectedGrade(val)}
             >
               <Option value="all">All Grades</Option>
-              {["6", "7", "8", "9", "10", "11", "12"].map((g) => (
+              {["6", "7", "8", "9", "10", "11", "12", "13"].map((g) => (
                 <Option key={g} value={g}>
                   Grade {g}
                 </Option>
@@ -342,6 +510,10 @@ const ClassList = () => {
         dataSource={filteredClasses}
         rowKey="_id"
         loading={loading}
+        expandable={{
+          expandedRowRender,
+          rowExpandable: () => true,
+        }}
       />
 
       <ClassModal
@@ -359,8 +531,8 @@ const ClassList = () => {
           setDrawerVisible(false);
           setSelectedClass(null);
         }}
-        classItem={selectedClass}
-        onSuccess={fetchClasses}
+        classData={selectedClass}
+        onEnrollSuccess={fetchClasses}
       />
 
       {sessionListVisible && (

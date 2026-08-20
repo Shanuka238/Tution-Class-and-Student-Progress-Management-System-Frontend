@@ -26,8 +26,9 @@ const GrowthHighlightsBanner = ({
       bordered={false}
       style={{
         borderRadius: "14px",
-        background: `linear-gradient(135deg, ${growthBadge.color}10 0%, ${themeToken.colorBgContainer} 100%)`,
-        border: `1px solid ${growthBadge.color}30`,
+        background: themeToken.colorBgContainer,
+        border: `1px solid ${themeToken.colorBorderSecondary}`,
+        borderLeft: `4px solid ${growthBadge.color}`,
       }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>

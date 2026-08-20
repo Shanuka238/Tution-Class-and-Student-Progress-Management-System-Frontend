@@ -74,7 +74,10 @@ const SessionModal = ({ visible, onCancel, onSuccess, courseId, courseName }) =>
           label="Session Date"
           rules={[{ required: true, message: "Please select a session date" }]}
         >
-          <DatePicker style={{ width: "100%" }} />
+          <DatePicker
+            style={{ width: "100%" }}
+            disabledDate={(current) => current && current < dayjs().startOf("day")}
+          />
         </Form.Item>
         <Form.Item
           name="venue"

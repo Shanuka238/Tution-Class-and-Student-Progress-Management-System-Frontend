@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Select, InputNumber, DatePicker, message } from "antd";
 import { classAPI } from "../../services/classApi";
 import { adminAPI } from "../../services/adminApi";
-
+import dayjs from "dayjs";
 
 const { Option } = Select;
 
@@ -83,10 +83,19 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
           <Form.Item name="start_date" label="Start Date" rules={[{ required: true, message: "Please select a start date" }]}>
-            <DatePicker style={{ width: "100%" }} />
+            <DatePicker 
+              style={{ width: "100%" }} 
+              disabledDate={(current) => current && current < dayjs().startOf("day")} 
+            />
           </Form.Item>
           <Form.Item name="end_date" label="End Date" rules={[{ required: true, message: "Please select an end date" }]}>
-            <DatePicker style={{ width: "100%" }} />
+            <DatePicker 
+              style={{ width: "100%" }} 
+              disabledDate={(current) => {
+                const startDate = form.getFieldValue("start_date");
+                return current && (current < dayjs().startOf("day") || (startDate && current < dayjs(startDate).startOf("day")));
+              }} 
+            />
           </Form.Item>
         </div>
 

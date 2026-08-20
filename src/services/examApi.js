@@ -2,6 +2,10 @@ import apiRequest from "./api.js";
 import { API_URLS } from "./apiUrls";
 
 export const examAPI = {
+  getAllExams: async () => {
+    return await apiRequest(`${API_URLS.EXAMS}`);
+  },
+
   createExam: async (examData) => {
     return await apiRequest(`${API_URLS.EXAMS}`, { method: "POST", body: examData });
   },

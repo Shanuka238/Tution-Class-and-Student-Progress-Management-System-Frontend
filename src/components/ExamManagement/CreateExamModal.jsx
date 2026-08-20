@@ -1,21 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, InputNumber, DatePicker, Select, Button, message } from "antd";
 import { examAPI } from "../../services/examApi";
 import dayjs from "dayjs";
 
 const { Option } = Select;
 
-const CreateExamModal = ({ visible, onCancel, onSuccess, classId }) => {
+const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+
+  const hasPreselectedClass = classId && classId !== "all";
+
+  useEffect(() => {
+    if (visible) {
+      if (hasPreselectedClass) {
+        form.setFieldsValue({ class_id: classId });
+      } else {
+        form.resetFields();
+      }
+    }
+  }, [visible, classId, hasPreselectedClass, form]);
 
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
       
+      const targetClassId = hasPreselectedClass ? classId : values.class_id;
+
       const payload = {
-        class_id: classId,
+        class_id: targetClassId,
         exam_title: values.exam_title,
         exam_date: values.exam_date.format("YYYY-MM-DD"),
         term: values.term,
@@ -50,6 +64,22 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId }) => {
       okText="Create Exam"
     >
       <Form form={form} layout="vertical">
+        {!hasPreselectedClass && (
+          <Form.Item
+            name="class_id"
+            label="Target Class"
+            rules={[{ required: true, message: "Please select a target class" }]}
+          >
+            <Select placeholder="Select a class for this exam">
+              {classes.map((cls) => (
+                <Option key={cls.class_id || cls._id} value={cls.class_id || cls._id}>
+                  {cls.class_name} - {cls.subject} (Grade {cls.grade})
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        )}
+
         <Form.Item
           name="exam_title"
           label="Exam Title"
@@ -75,7 +105,10 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId }) => {
           label="Exam Date"
           rules={[{ required: true, message: "Please select the exam date" }]}
         >
-          <DatePicker style={{ width: "100%" }} />
+          <DatePicker
+            style={{ width: "100%" }}
+            disabledDate={(current) => current && current < dayjs().startOf("day")}
+          />
         </Form.Item>
 
         <Form.Item
