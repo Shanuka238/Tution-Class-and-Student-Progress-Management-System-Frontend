@@ -120,14 +120,32 @@ function StudentDashboardOverview() {
   const unpaidFees = feesList.filter((f) => f.status !== "paid");
   const totalUnpaidAmount = unpaidFees.reduce((acc, f) => acc + (f.amount || 0), 0);
 
-  const scoredExams = examResults.filter(
-    (r) => r.marks !== undefined && r.marks !== null
-  );
+  const scoredExams = examResults
+    .map((r) => {
+      const marksVal =
+        r.marks_obtained !== undefined && r.marks_obtained !== null
+          ? r.marks_obtained
+          : r.marks !== undefined && r.marks !== null
+          ? r.marks
+          : r.score;
+
+      if (marksVal !== undefined && marksVal !== null) {
+        return Number(marksVal);
+      }
+
+      const gradeMap = { A: 85, B: 75, C: 65, S: 55, F: 35 };
+      if (r.grade && gradeMap[r.grade.toUpperCase()]) {
+        return gradeMap[r.grade.toUpperCase()];
+      }
+
+      return null;
+    })
+    .filter((m) => m !== null && !isNaN(m));
+
   const avgExamScore =
     scoredExams.length > 0
       ? Math.round(
-          scoredExams.reduce((acc, r) => acc + (r.marks || 0), 0) /
-            scoredExams.length
+          scoredExams.reduce((acc, val) => acc + val, 0) / scoredExams.length
         )
       : 0;
 

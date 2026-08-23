@@ -60,7 +60,7 @@ const AttendanceRegisterDrawer = ({ visible, onClose, course }) => {
           </div>
         </div>
       }
-      width={900}
+      width={950}
       onClose={onClose}
       open={visible}
       destroyOnClose

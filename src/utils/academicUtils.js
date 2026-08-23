@@ -30,11 +30,11 @@ export const calculateGrowthMetrics = (attendanceLogs = [], examResults = [], fe
   const totalUnpaidAmount = unpaidFees.reduce((acc, f) => acc + (f.amount || 0), 0);
 
   const validExamScores = examResults.map((r) => {
-    let markVal = r.marks;
+    let markVal = r.marks_obtained !== undefined && r.marks_obtained !== null ? r.marks_obtained : r.marks !== undefined && r.marks !== null ? r.marks : r.score;
     if ((markVal === undefined || markVal === null || markVal === 0) && r.grade && GRADE_TO_MARKS_MAP[r.grade]) {
       markVal = GRADE_TO_MARKS_MAP[r.grade];
     }
-    return markVal !== undefined && markVal !== null ? markVal : 0;
+    return markVal !== undefined && markVal !== null ? Number(markVal) : 0;
   });
 
   const avgExamScore =

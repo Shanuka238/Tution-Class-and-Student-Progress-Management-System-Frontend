@@ -17,7 +17,7 @@ function ProfileModal({ visible, onCancel }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [activeView, setActiveView] = useState("view"); // "view" | "edit" | "password"
+  const [activeView, setActiveView] = useState("view"); 
 
   useEffect(() => {
     if (visible) {

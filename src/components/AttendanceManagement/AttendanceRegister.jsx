@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Table, Tag, Input, Select, Button, Card, Row, Col, Typography, Pagination, Space, theme } from "antd";
+import { Table, Tag, Input, Select, Button, Card, Row, Col, Typography, Pagination, Space, Tooltip, theme } from "antd";
 import { SearchOutlined, ReloadOutlined, LeftOutlined, RightOutlined, CalendarOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { STATUS_LABELS, STATUS_COLORS } from "../../enums/attendanceStatus";
@@ -15,7 +15,7 @@ const AttendanceRegister = ({ students = [], sessions = [], attendanceRecords = 
   // Filters
   const [searchText, setSearchText] = useState("");
   const [attendanceRateFilter, setAttendanceRateFilter] = useState("all");
-  const [selectedSessionDate, setSelectedSessionDate] = useState("all");
+  const [selectedSessionId, setSelectedSessionId] = useState("all");
 
   // Date Column Pagination state
   const [sessionPage, setSessionPage] = useState(1);
@@ -30,20 +30,20 @@ const AttendanceRegister = ({ students = [], sessions = [], attendanceRecords = 
     return map;
   }, [attendanceRecords]);
 
-  // Filtered Sessions if single date filter selected
+  // Filtered Sessions if single session filter selected
   const activeSessions = useMemo(() => {
-    if (selectedSessionDate === "all") return sessions;
-    return sessions.filter((s) => s.date === selectedSessionDate);
-  }, [sessions, selectedSessionDate]);
+    if (selectedSessionId === "all") return sessions;
+    return sessions.filter((s) => s._id === selectedSessionId);
+  }, [sessions, selectedSessionId]);
 
   // Sliced 5 Days Attendance Columns per page
   const totalSessionPages = Math.ceil(activeSessions.length / SESSIONS_PER_PAGE) || 1;
 
   const displayedSessions = useMemo(() => {
-    if (selectedSessionDate !== "all") return activeSessions;
+    if (selectedSessionId !== "all") return activeSessions;
     const start = (sessionPage - 1) * SESSIONS_PER_PAGE;
     return activeSessions.slice(start, start + SESSIONS_PER_PAGE);
-  }, [activeSessions, sessionPage, selectedSessionDate]);
+  }, [activeSessions, sessionPage, selectedSessionId]);
 
   // Filtered Students list
   const filteredStudents = useMemo(() => {
@@ -93,7 +93,7 @@ const AttendanceRegister = ({ students = [], sessions = [], attendanceRecords = 
   const resetFilters = () => {
     setSearchText("");
     setAttendanceRateFilter("all");
-    setSelectedSessionDate("all");
+    setSelectedSessionId("all");
     setSessionPage(1);
   };
 
@@ -119,15 +119,62 @@ const AttendanceRegister = ({ students = [], sessions = [], attendanceRecords = 
     },
     ...displayedSessions.map((sess) => ({
       title: (
-        <div style={{ textAlign: "center" }}>
-          <div>{dayjs(sess.date).format("DD MMM")}</div>
-          <div style={{ fontSize: "10px", fontWeight: "normal", color: themeToken.colorTextSecondary }}>
-            {dayjs(sess.date).format("ddd")}
+        <Tooltip
+          title={
+            <div style={{ fontSize: "12px" }}>
+              <div><strong>Date:</strong> {dayjs(sess.date).format("DD MMM YYYY (dddd)")}</div>
+              <div><strong>Time:</strong> {sess.start_time || "—"} - {sess.end_time || "—"}</div>
+              {sess.venue && <div><strong>Venue:</strong> {sess.venue}</div>}
+              {sess.teacher_id?.user_id && (
+                <div>
+                  <strong>Educator:</strong> {sess.teacher_id.user_id.first_name} {sess.teacher_id.user_id.last_name}
+                </div>
+              )}
+            </div>
+          }
+        >
+          <div style={{ textAlign: "center", cursor: "pointer", padding: "2px 0" }}>
+            <div style={{ fontWeight: 600, fontSize: "13px" }}>{dayjs(sess.date).format("DD MMM")}</div>
+            <div style={{ fontSize: "11px", color: themeToken.colorTextSecondary }}>
+              {dayjs(sess.date).format("ddd")}
+            </div>
+            {sess.start_time && sess.end_time ? (
+              <Tag
+                color="blue"
+                style={{
+                  margin: "4px 0 0 0",
+                  fontSize: "10px",
+                  padding: "0 4px",
+                  lineHeight: "16px",
+                  borderRadius: "4px",
+                  fontWeight: 500,
+                  maxWidth: "100%",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {sess.start_time} - {sess.end_time}
+              </Tag>
+            ) : sess.venue ? (
+              <Tag
+                color="purple"
+                style={{
+                  margin: "4px 0 0 0",
+                  fontSize: "10px",
+                  padding: "0 4px",
+                  lineHeight: "16px",
+                  borderRadius: "4px",
+                }}
+              >
+                {sess.venue}
+              </Tag>
+            ) : null}
           </div>
-        </div>
+        </Tooltip>
       ),
       key: sess._id,
-      width: 100,
+      width: 120,
       align: "center",
       render: (_, record) => {
         const studentId = record._id;
@@ -177,7 +224,7 @@ const AttendanceRegister = ({ students = [], sessions = [], attendanceRecords = 
     },
   ];
 
-  const hasFilters = searchText || attendanceRateFilter !== "all" || selectedSessionDate !== "all";
+  const hasFilters = searchText || attendanceRateFilter !== "all" || selectedSessionId !== "all";
 
   // Calculate session date range strings for pagination header
   const firstSessionDate = displayedSessions[0] ? dayjs(displayedSessions[0].date).format("DD MMM") : "";
@@ -221,16 +268,17 @@ const AttendanceRegister = ({ students = [], sessions = [], attendanceRecords = 
           <Col xs={12} sm={7} md={5}>
             <Select
               style={{ width: "100%" }}
-              value={selectedSessionDate}
+              value={selectedSessionId}
               onChange={(val) => {
-                setSelectedSessionDate(val);
+                setSelectedSessionId(val);
                 setSessionPage(1);
               }}
+              placeholder="All Sessions"
             >
-              <Option value="all">All Session Dates</Option>
+              <Option value="all">All Sessions</Option>
               {sessions.map((sess) => (
-                <Option key={sess._id} value={sess.date}>
-                  {dayjs(sess.date).format("DD MMM YYYY")}
+                <Option key={sess._id} value={sess._id}>
+                  {dayjs(sess.date).format("DD MMM")} {sess.start_time ? `(${sess.start_time}-${sess.end_time})` : ""}
                 </Option>
               ))}
             </Select>
@@ -246,7 +294,7 @@ const AttendanceRegister = ({ students = [], sessions = [], attendanceRecords = 
       </Card>
 
       {/* 5 Days Attendance Column Slicing Bar */}
-      {selectedSessionDate === "all" && activeSessions.length > 0 && (
+      {selectedSessionId === "all" && activeSessions.length > 0 && (
         <Card
           size="small"
           style={{
