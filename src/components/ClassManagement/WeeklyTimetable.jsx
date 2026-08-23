@@ -3,42 +3,49 @@ import { Card, Tag, Empty, message, theme, Spin, Row, Col, Button, Space, Segmen
 import { ClockCircleOutlined, UserOutlined, EnvironmentOutlined, BookOutlined, LeftOutlined, RightOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import { DAYS_OF_WEEK } from "../../enums/dateTime";
+import dayjs from "dayjs";
 
 const WeeklyTimetable = () => {
   const { token: themeToken } = theme.useToken();
   const [classes, setClasses] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [weekOffset, setWeekOffset] = useState(0);
   const [viewMode, setViewMode] = useState("current");
+  const [searchFilter, setSearchFilter] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState("all");
 
   const getWeekDates = useCallback(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-    const monday = new Date(today.setDate(diff));
-
-    const weekStart = new Date(monday);
-    weekStart.setDate(weekStart.getDate() + weekOffset * 7);
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
+    const base = dayjs().add(weekOffset, "week");
+    const dayNum = base.day(); // 0 is Sunday, 1 is Monday...
+    const monday = dayNum === 0 ? base.subtract(6, "day") : base.subtract(dayNum - 1, "day");
+    const weekStart = monday.startOf("day");
+    const weekEnd = monday.add(6, "day").endOf("day");
     return { weekStart, weekEnd };
   }, [weekOffset]);
+
+  // Load all active courses once to populate subject filter catalog
+  const loadAllCourses = useCallback(async () => {
+    try {
+      const res = await classAPI.getActiveClasses();
+      const data = res.data || res;
+      setAllCourses(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error("Error loading course catalog:", e);
+    }
+  }, []);
 
   const fetchClasses = useCallback(async () => {
     setLoading(true);
     try {
       const { weekStart, weekEnd } = getWeekDates();
-      const startStr = weekStart.toISOString().split("T")[0];
-      const endStr = weekEnd.toISOString().split("T")[0];
+      const startStr = weekStart.format("YYYY-MM-DD");
+      const endStr = weekEnd.format("YYYY-MM-DD");
       
       const response = await classAPI.getTimetable(startStr, endStr);
 
       let classesData = [];
-      if (response && typeof response === 'object') {
+      if (response && typeof response === "object") {
         if (Array.isArray(response)) {
           classesData = response;
         } else if (response.data && Array.isArray(response.data)) {
@@ -50,6 +57,7 @@ const WeeklyTimetable = () => {
 
       setClasses(classesData);
     } catch (error) {
+      console.error("Timetable load error:", error);
       message.error(error.message || "Failed to load timetable data");
       setClasses([]);
     } finally {
@@ -58,25 +66,17 @@ const WeeklyTimetable = () => {
   }, [getWeekDates]);
 
   useEffect(() => {
+    loadAllCourses();
+  }, [loadAllCourses]);
+
+  useEffect(() => {
     fetchClasses();
-
-    const interval = setInterval(fetchClasses, 15000); // 15 seconds polling to save API calls
-    return () => clearInterval(interval);
   }, [fetchClasses]);
-
-  const isClassInWeek = (classDate) => {
-    if (!classDate) return false;
-    const { weekStart, weekEnd } = getWeekDates();
-    const classDateObj = new Date(classDate);
-    classDateObj.setHours(0, 0, 0, 0);
-    return classDateObj >= weekStart && classDateObj <= weekEnd;
-  };
 
   const getWeekLabel = () => {
     const { weekStart, weekEnd } = getWeekDates();
-    const options = { month: "short", day: "numeric" };
-    const startStr = weekStart.toLocaleDateString("en-US", options);
-    const endStr = weekEnd.toLocaleDateString("en-US", options);
+    const startStr = weekStart.format("MMM D");
+    const endStr = weekEnd.format("MMM D, YYYY");
 
     if (weekOffset === 0) {
       return `This Week (${startStr} - ${endStr})`;
@@ -91,38 +91,37 @@ const WeeklyTimetable = () => {
 
   const getDayWithDate = (dayIndex) => {
     const { weekStart } = getWeekDates();
-    const date = new Date(weekStart);
-    date.setDate(date.getDate() + dayIndex);
+    const targetDate = weekStart.add(dayIndex, "day");
     return {
       day: DAYS_OF_WEEK[dayIndex],
-      date: date.toLocaleDateString("en-US", { month: "numeric", day: "numeric" }),
-      fullDate: date
+      date: targetDate.format("MMM D"),
+      fullDateStr: targetDate.format("YYYY-MM-DD"),
+      fullDate: targetDate.toDate(),
     };
   };
 
-  const [searchFilter, setSearchFilter] = useState("");
-  const [subjectFilter, setSubjectFilter] = useState("all");
-
-  // Extract unique subjects for dropdown filter
+  // Extract unique subjects from both active course catalog and timetable sessions
   const uniqueSubjects = useMemo(() => {
     const set = new Set();
-    (classes || []).forEach((cls) => {
-      const subj = cls.subject || cls.course_id?.subject || cls.course_id?.class_name;
+    allCourses.forEach((c) => {
+      if (c.subject) set.add(c.subject);
+    });
+    classes.forEach((cls) => {
+      const subj = cls.subject || cls.course_id?.subject;
       if (subj) set.add(subj);
     });
     return Array.from(set);
-  }, [classes]);
+  }, [allCourses, classes]);
 
   const getClassesForDay = (dayIndex) => {
+    const dayData = getDayWithDate(dayIndex);
     return (classes || [])
       .filter((cls) => {
         if (!cls.date) return false;
 
-        // 1. Day of Week Filter
-        const classDate = new Date(cls.date);
-        const dayOfWeek = classDate.getDay();
-        const classDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-        if (classDay !== dayIndex) return false;
+        // 1. Match Exact Session Date
+        const sessionDateStr = dayjs(cls.date).format("YYYY-MM-DD");
+        if (sessionDateStr !== dayData.fullDateStr) return false;
 
         // 2. Subject Filter
         const subj = cls.subject || cls.course_id?.subject || cls.course_id?.class_name || "";
@@ -135,7 +134,10 @@ const WeeklyTimetable = () => {
           const q = searchFilter.toLowerCase().trim();
           const title = (cls.class_name || cls.course_id?.class_name || "").toLowerCase();
           const venue = (cls.venue || "").toLowerCase();
-          const teacher = (cls.teacher_name || cls.teacher_id?.user_id?.first_name || "").toLowerCase();
+          const teacher = (
+            cls.teacher_name ||
+            `${cls.teacher_id?.user_id?.first_name || ""} ${cls.teacher_id?.user_id?.last_name || ""}`
+          ).toLowerCase();
 
           if (!title.includes(q) && !subj.toLowerCase().includes(q) && !venue.includes(q) && !teacher.includes(q)) {
             return false;
@@ -154,15 +156,16 @@ const WeeklyTimetable = () => {
   // Get color based on grade
   const getClassColor = (grade) => {
     const colors = {
+      "6": "#0284c7",
+      "7": "#0d9488",
+      "8": "#16a34a",
       "9": "#1890ff",
       "10": "#722ed1",
       "11": "#fa8c16",
       "12": "#f5222d",
-      "A": "#52c41a",
-      "B": "#13c2c2",
-      "C": "#1890ff",
+      "13": "#4f46e5",
     };
-    return colors[grade] || "#1890ff";
+    return colors[String(grade)] || "#4f46e5";
   };
 
   const handlePreviousWeek = () => {
@@ -263,9 +266,10 @@ const WeeklyTimetable = () => {
               <Select
                 value={subjectFilter}
                 onChange={(val) => setSubjectFilter(val)}
-                style={{ width: 160 }}
+                style={{ width: 180 }}
+                placeholder="Filter by Subject"
               >
-                <Select.Option value="all">All Subjects</Select.Option>
+                <Select.Option value="all">All Subjects ({uniqueSubjects.length})</Select.Option>
                 {uniqueSubjects.map((s) => (
                   <Select.Option key={s} value={s}>
                     {s}
@@ -289,7 +293,7 @@ const WeeklyTimetable = () => {
 
           <div style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>
             {hasClassesThisWeek ? (
-              <span>✓ Classes found for this week • Total: {classes.length} classes</span>
+              <span>✓ Classes found for this week • Total: {classes.length} session(s)</span>
             ) : (
               <span style={{ color: themeToken.colorWarning }}>⚠ No classes scheduled for this week</span>
             )}
@@ -349,11 +353,14 @@ const WeeklyTimetable = () => {
                     {dayClasses.map((cls) => {
                       const course = cls.course_id || {};
                       const teacher = cls.teacher_id?.user_id;
+                      const teacherName = teacher
+                        ? `${teacher.first_name || ""} ${teacher.last_name || ""}`.trim()
+                        : "Teacher";
                       const borderColor = getClassColor(course.grade);
 
                       return (
                         <div
-                          key={cls._id}
+                          key={cls._id || cls.session_id}
                           style={{
                             padding: "12px",
                             border: `2px solid ${borderColor}`,
@@ -384,7 +391,7 @@ const WeeklyTimetable = () => {
                             fontWeight: 700,
                             borderRadius: "0 8px 0 4px"
                           }}>
-                            Grade {course.grade}
+                            Grade {course.grade || "N/A"}
                           </div>
 
                           <div style={{ marginBottom: "10px", marginTop: "2px" }}>
@@ -394,69 +401,38 @@ const WeeklyTimetable = () => {
                               color: themeToken.colorText,
                               marginBottom: "4px"
                             }}>
-                              {course.class_name}
+                              {course.class_name || "Class Session"}
                             </div>
                             <div style={{
                               fontSize: "12px",
-                              color: themeToken.colorTextSecondary,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px"
+                              color: themeToken.colorTextSecondary
                             }}>
-                              <BookOutlined style={{ fontSize: "11px" }} />
-                              {course.subject}
+                              <BookOutlined style={{ marginRight: "4px" }} />
+                              {course.subject || "Subject"}
                             </div>
                           </div>
 
                           <div style={{
-                            height: "1px",
-                            background: `${borderColor}30`,
-                            marginBottom: "10px"
-                          }} />
-
-                          <div style={{
                             display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginBottom: "6px"
+                            flexDirection: "column",
+                            gap: "6px",
+                            fontSize: "12px",
+                            color: themeToken.colorTextSecondary
                           }}>
-                            <div style={{
-                              fontSize: "12px",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              fontWeight: 500,
-                              color: themeToken.colorText
-                            }}>
-                              <ClockCircleOutlined style={{ color: borderColor, fontSize: "13px" }} />
-                              {cls.start_time} - {cls.end_time}
+                            <div>
+                              <ClockCircleOutlined style={{ marginRight: "6px", color: themeToken.colorPrimary }} />
+                              <strong>{cls.start_time} - {cls.end_time}</strong>
                             </div>
-                            {cls.status === "cancelled" && (
-                              <Tag color="red" style={{ margin: 0, fontSize: "10px", lineHeight: "14px" }}>Cancelled</Tag>
-                            )}
-                          </div>
 
-                          <div style={{
-                            fontSize: "12px",
-                            marginBottom: "6px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            color: themeToken.colorTextSecondary
-                          }}>
-                            <UserOutlined style={{ fontSize: "12px" }} />
-                            {teacher ? `${teacher.first_name} ${teacher.last_name}` : "Unassigned"}
-                          </div>
+                            <div>
+                              <EnvironmentOutlined style={{ marginRight: "6px", color: "#52c41a" }} />
+                              {cls.venue || "Main Hall"}
+                            </div>
 
-                          <div style={{
-                            fontSize: "12px",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            color: themeToken.colorTextSecondary
-                          }}>
-                            <EnvironmentOutlined style={{ fontSize: "12px" }} />
-                            {cls.venue || course.venue}
+                            <div>
+                              <UserOutlined style={{ marginRight: "6px", color: "#722ed1" }} />
+                              {teacherName}
+                            </div>
                           </div>
                         </div>
                       );
@@ -464,12 +440,13 @@ const WeeklyTimetable = () => {
                   </div>
                 ) : (
                   <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
                     description={
                       <span style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
                         No classes
                       </span>
                     }
-                    style={{ margin: "20px 0" }}
+                    style={{ margin: "24px 0" }}
                   />
                 )}
               </Card>

@@ -211,11 +211,11 @@ const ChildProgressView = ({
 
                   let subjMarksSum = 0;
                   subjExams.forEach((r) => {
-                    let m = r.marks;
+                    let m = r.marks_obtained !== undefined && r.marks_obtained !== null ? r.marks_obtained : r.marks !== undefined && r.marks !== null ? r.marks : r.score;
                     if ((m === undefined || m === null || m === 0) && r.grade && GRADE_TO_MARKS_MAP[r.grade]) {
                       m = GRADE_TO_MARKS_MAP[r.grade];
                     }
-                    subjMarksSum += m || 0;
+                    subjMarksSum += Number(m) || 0;
                   });
 
                   const subjMarksAvg =
