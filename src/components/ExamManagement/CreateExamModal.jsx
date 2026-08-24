@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, InputNumber, DatePicker, Select, Button, message } from "antd";
+import { Modal, Form, Input, InputNumber, DatePicker, Select, Button, Tag, message } from "antd";
+import { BookOutlined } from "@ant-design/icons";
 import { examAPI } from "../../services/examApi";
 import dayjs from "dayjs";
 
@@ -9,24 +10,43 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  const hasPreselectedClass = classId && classId !== "all";
+  const currentUser = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
+  const isTeacher = currentUser.role === "teacher";
+
+  const hasPreselectedClass = Boolean(classId && classId !== "all");
+
+  // Determine auto-assigned course for teacher
+  const defaultClass = hasPreselectedClass
+    ? classes.find((c) => (c.class_id || c._id) === classId) || classes[0]
+    : classes[0];
+
+  const singleClassMode = isTeacher && classes.length === 1;
 
   useEffect(() => {
     if (visible) {
       if (hasPreselectedClass) {
         form.setFieldsValue({ class_id: classId });
+      } else if (isTeacher && classes.length > 0) {
+        form.setFieldsValue({ class_id: classes[0].class_id || classes[0]._id });
       } else {
         form.resetFields();
       }
     }
-  }, [visible, classId, hasPreselectedClass, form]);
+  }, [visible, classId, hasPreselectedClass, isTeacher, classes, form]);
 
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      
-      const targetClassId = hasPreselectedClass ? classId : values.class_id;
+
+      let targetClassId;
+      if (hasPreselectedClass) {
+        targetClassId = classId;
+      } else if (singleClassMode) {
+        targetClassId = defaultClass?.class_id || defaultClass?._id;
+      } else {
+        targetClassId = values.class_id || defaultClass?.class_id || defaultClass?._id;
+      }
 
       const payload = {
         class_id: targetClassId,
@@ -37,23 +57,26 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
       };
 
       await examAPI.createExam(payload);
-      message.success("Exam created successfully!");
+      message.success("Exam scheduled successfully!");
       form.resetFields();
       onSuccess();
     } catch (error) {
       if (error.errorFields) {
-        // Validation error, ignore
         return;
       }
-      message.error(error.message || "Failed to create exam");
+      message.error(error.message || "Failed to schedule exam");
     } finally {
       setLoading(false);
     }
   };
 
+  const currentSelectedClass = classes.find(
+    (c) => (c.class_id || c._id) === (hasPreselectedClass ? classId : defaultClass?.class_id || defaultClass?._id)
+  ) || defaultClass;
+
   return (
     <Modal
-      title="Create New Exam"
+      title="Schedule New Exam"
       open={visible}
       onOk={handleOk}
       onCancel={() => {
@@ -61,23 +84,46 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
         onCancel();
       }}
       confirmLoading={loading}
-      okText="Create Exam"
+      okText="Schedule Exam"
     >
       <Form form={form} layout="vertical">
-        {!hasPreselectedClass && (
-          <Form.Item
-            name="class_id"
-            label="Target Class"
-            rules={[{ required: true, message: "Please select a target class" }]}
+        {/* If teacher has 1 assigned course or course is preselected, display clean locked badge */}
+        {(singleClassMode || (hasPreselectedClass && isTeacher)) && currentSelectedClass ? (
+          <div
+            style={{
+              marginBottom: "16px",
+              padding: "12px 14px",
+              background: "rgba(99, 102, 241, 0.08)",
+              borderRadius: "8px",
+              border: "1px solid rgba(99, 102, 241, 0.25)",
+            }}
           >
-            <Select placeholder="Select a class for this exam">
-              {classes.map((cls) => (
-                <Option key={cls.class_id || cls._id} value={cls.class_id || cls._id}>
-                  {cls.class_name} - {cls.subject} (Grade {cls.grade})
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+            <div style={{ fontSize: "11px", color: "#818cf8", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.5px" }}>
+              Assigned Course
+            </div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#f8fafc", marginTop: "2px" }}>
+              <BookOutlined style={{ marginRight: "6px" }} />
+              {currentSelectedClass.class_name} • {currentSelectedClass.subject} (Grade {currentSelectedClass.grade})
+            </div>
+          </div>
+        ) : (
+          /* Multi-course selection for Admin or Teacher teaching multiple courses */
+          !hasPreselectedClass && (
+            <Form.Item
+              name="class_id"
+              label={isTeacher ? "Assigned Course" : "Target Class"}
+              rules={[{ required: true, message: "Please select a target class" }]}
+              initialValue={defaultClass ? defaultClass.class_id || defaultClass._id : undefined}
+            >
+              <Select placeholder="Select a class for this exam">
+                {classes.map((cls) => (
+                  <Option key={cls.class_id || cls._id} value={cls.class_id || cls._id}>
+                    {cls.class_name} - {cls.subject} (Grade {cls.grade})
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          )
         )}
 
         <Form.Item
@@ -85,13 +131,14 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
           label="Exam Title"
           rules={[{ required: true, message: "Please enter the exam title" }]}
         >
-          <Input placeholder="e.g. Mid Term Mathematics Exam" />
+          <Input placeholder="e.g. Term 1 Assessment Paper" />
         </Form.Item>
 
         <Form.Item
           name="term"
           label="Term"
           rules={[{ required: true, message: "Please select a term" }]}
+          initialValue="Term 1"
         >
           <Select placeholder="Select Term">
             <Option value="Term 1">Term 1</Option>

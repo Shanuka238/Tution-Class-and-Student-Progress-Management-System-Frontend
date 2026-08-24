@@ -11,7 +11,7 @@ function ProtectedRoute({ children, allowedRoles = [] }) {
   if (loading) {
     return (
       <div className="loading-screen" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        <Spin size="large" tip="Loading EduTracker..." style={{ color: isDarkMode ? "#FFFFFF" : undefined }} />
+        <Spin size="large" tip="Loading EduManager..." style={{ color: isDarkMode ? "#FFFFFF" : undefined }} />
       </div>
     );
   }

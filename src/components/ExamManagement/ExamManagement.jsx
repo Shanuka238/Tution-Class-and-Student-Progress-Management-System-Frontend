@@ -96,7 +96,7 @@ const ExamManagement = () => {
   const filteredExams = useMemo(() => {
     return exams.filter((exam) => {
       const classId = exam.class_id?._id || exam.class_id?.id || exam.class_id;
-      const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (typeof exam.class_id === "object" ? exam.class_id : {});
+      const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (exam.class_id && typeof exam.class_id === "object" ? exam.class_id : {}) || {};
 
       // 1. Class Filter
       if (selectedClass !== "all" && classId !== selectedClass) {
@@ -110,8 +110,10 @@ const ExamManagement = () => {
 
       // 3. Grade Filter
       const grade = classObj.grade;
-      if (selectedGrade !== "all" && String(grade) !== String(selectedGrade)) {
-        return false;
+      if (selectedGrade !== "all") {
+        if (!grade || String(grade) !== String(selectedGrade)) {
+          return false;
+        }
       }
 
       // 4. Status Filter (Upcoming vs Past)
@@ -165,7 +167,7 @@ const ExamManagement = () => {
       key: "class",
       render: (_, record) => {
         const classId = record.class_id?._id || record.class_id?.id || record.class_id;
-        const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (typeof record.class_id === "object" ? record.class_id : null);
+        const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (record.class_id && typeof record.class_id === "object" ? record.class_id : null);
 
         if (!classObj) return <Text type="secondary">N/A</Text>;
 
@@ -173,10 +175,10 @@ const ExamManagement = () => {
           <div>
             <div style={{ fontWeight: 500 }}>
               <BookOutlined style={{ marginRight: 6, color: "#4F46E5" }} />
-              {classObj.class_name}
+              {classObj.class_name || "Untitled Course"}
             </div>
             <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
-              {classObj.subject} • Grade {classObj.grade}
+              {classObj.subject || "General"} {classObj.grade ? `• Grade ${classObj.grade}` : ""}
             </div>
           </div>
         );
@@ -204,7 +206,7 @@ const ExamManagement = () => {
       key: "action",
       render: (_, record) => {
         const classId = record.class_id?._id || record.class_id?.id || record.class_id;
-        const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (typeof record.class_id === "object" ? record.class_id : null);
+        const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (record.class_id && typeof record.class_id === "object" ? record.class_id : null);
 
         return (
           <Button
@@ -237,7 +239,7 @@ const ExamManagement = () => {
   const managingExamClassObj = useMemo(() => {
     if (!managingExam) return null;
     const classId = managingExam.class_id?._id || managingExam.class_id?.id || managingExam.class_id;
-    return classes.find((c) => (c._id || c.class_id) === classId) || (typeof managingExam.class_id === "object" ? managingExam.class_id : null);
+    return classes.find((c) => (c._id || c.class_id) === classId) || (managingExam.class_id && typeof managingExam.class_id === "object" ? managingExam.class_id : null);
   }, [managingExam, classes]);
 
   return (
