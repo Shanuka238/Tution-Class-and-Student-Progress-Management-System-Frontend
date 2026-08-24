@@ -199,6 +199,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
           setSessionModalVisible(false);
           fetchSessions();
         }}
+        course={course}
         courseId={course?._id}
         courseName={course?.class_name}
       />

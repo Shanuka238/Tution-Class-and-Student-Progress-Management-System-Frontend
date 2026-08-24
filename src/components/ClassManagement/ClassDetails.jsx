@@ -117,11 +117,23 @@ const ClassDetails = ({ classId, onBack }) => {
             </div>
           </div>
           
-          <div style={{ textAlign: "right", minWidth: "150px" }}>
-            <Text type="secondary">Primary Instructor</Text>
-            <Title level={4} style={{ margin: "4px 0 16px 0" }}>
-              {teacherUser ? `${teacherUser.first_name} ${teacherUser.last_name}` : "Unassigned"}
-            </Title>
+          <div style={{ textAlign: "right", minWidth: "180px" }}>
+            <Text type="secondary">Assigned Educator(s)</Text>
+            <div style={{ margin: "6px 0 16px 0" }}>
+              {Array.isArray(classInfo.teachers) && classInfo.teachers.length > 0 ? (
+                <Space wrap style={{ justifyContent: "flex-end" }}>
+                  {classInfo.teachers.map((t) => (
+                    <Tag key={t._id || t.teacher_id} color="blue" style={{ margin: "2px 0", fontSize: "13px", padding: "2px 8px" }}>
+                      {t.user_id ? `${t.user_id.first_name} ${t.user_id.last_name}` : "Teacher"}
+                    </Tag>
+                  ))}
+                </Space>
+              ) : (
+                <Title level={4} style={{ margin: "4px 0 16px 0" }}>
+                  {teacherUser ? `${teacherUser.first_name} ${teacherUser.last_name}` : "Unassigned"}
+                </Title>
+              )}
+            </div>
             {canManage && (
               <Button 
                 type="primary" 

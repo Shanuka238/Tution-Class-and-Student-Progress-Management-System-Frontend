@@ -99,9 +99,32 @@ const ClassModal = ({ visible, onCancel, onSuccess }) => {
           </Form.Item>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
           <Form.Item name="max_students" label="Max Seats Limit" rules={[{ required: true }]}>
             <InputNumber min={1} style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            name="teacher_ids"
+            label="Assigned Educator(s)"
+            rules={[{ required: true, message: "Please select at least one educator" }]}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Select educators"
+              allowClear
+              optionFilterProp="label"
+              style={{ width: "100%" }}
+            >
+              {teachers.map((t) => (
+                <Option
+                  key={t.profile?._id || t.user?._id}
+                  value={t.profile?._id || t.user?._id}
+                  label={`${t.user?.first_name} ${t.user?.last_name}`}
+                >
+                  {t.user?.first_name} {t.user?.last_name} ({t.profile?.subjects || "General"})
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
         </div>
       </Form>
