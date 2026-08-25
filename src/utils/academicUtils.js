@@ -64,7 +64,31 @@ export const calculateGrowthMetrics = (attendanceLogs = [], examResults = [], fe
 };
 
 export const getGrowthBadge = (score) => {
-  if (score >= 85) return { color: "#10B981", label: "🌟 Excellent Progress", text: "Thriving in all academic domains" };
-  if (score >= 70) return { color: "#3B82F6", label: "📈 Good Standing", text: "Consistent attendance & solid performance" };
-  return { color: "#EF4444", label: "⚠️ Attention Recommended", text: "Requires focus on attendance or exam revision" };
+  if (score >= 85) {
+    return {
+      color: "#10B981",
+      label: "🌟 Academic Dynamo",
+      text: "Top-tier academic performance and consistent attendance",
+    };
+  }
+  if (score >= 70) {
+    return {
+      color: "#3B82F6",
+      label: "📈 Consistent Scholar",
+      text: "Strong and steady academic achievement",
+    };
+  }
+  if (score >= 50) {
+    return {
+      color: "#F59E0B",
+      label: "🎯 Steady Performer",
+      text: "Moderate progress requiring targeted revision and attendance",
+    };
+  }
+  return {
+    color: "#EF4444",
+    label: "⚠️ Needs Focus",
+    text: "At-risk student requiring immediate parental and educator intervention",
+  };
 };
+

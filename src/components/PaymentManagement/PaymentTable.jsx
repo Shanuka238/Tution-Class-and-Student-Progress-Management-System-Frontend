@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Table, Tag, Button, Space, Input, Select, Card, Row, Col, theme } from "antd";
 import { CreditCardOutlined, FilePdfOutlined, SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { formatDate } from "../../utils/dateUtils";
+import PayHereReceiptModal from "./PayHereReceiptModal";
 
 const { Option } = Select;
 
@@ -9,6 +10,10 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
   const { token: themeToken } = theme.useToken();
   const [searchText, setSearchText] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+
+  // Receipt Modal State
+  const [receiptModalVisible, setReceiptModalVisible] = useState(false);
+  const [selectedFeeForReceipt, setSelectedFeeForReceipt] = useState(null);
 
   const filteredFees = useMemo(() => {
     return fees.filter((item) => {
@@ -38,6 +43,11 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
     setSelectedStatus("all");
   };
 
+  const handleOpenReceipt = (feeRecord) => {
+    setSelectedFeeForReceipt(feeRecord);
+    setReceiptModalVisible(true);
+  };
+
   const columns = [
     {
       title: "Course / Subject",
@@ -54,9 +64,10 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
       ),
     },
     {
-      title: "Month",
+      title: "Billing Month",
       dataIndex: "month",
       key: "month",
+      render: (m) => <span style={{ fontWeight: 500 }}>{m}</span>,
     },
     {
       title: "Amount",
@@ -75,7 +86,7 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
       dataIndex: "status",
       key: "status",
       render: (status) => {
-        if (status === "paid") return <Tag color="success">Paid</Tag>;
+        if (status === "paid") return <Tag color="success">Paid ✓</Tag>;
         if (status === "unpaid") return <Tag color="processing">Unpaid</Tag>;
         return <Tag color="error">Overdue</Tag>;
       },
@@ -96,11 +107,12 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
             </Button>
           ) : (
             <Button
-              type="link"
-              icon={<FilePdfOutlined />}
-              onClick={() => window.open(record.receipt_url, "_blank")}
+              type="default"
+              size="small"
+              icon={<FilePdfOutlined style={{ color: "#7c3aed" }} />}
+              onClick={() => handleOpenReceipt(record)}
             >
-              Receipt
+              View Receipt
             </Button>
           )}
         </Space>
@@ -117,7 +129,7 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
         size="small"
         style={{
           marginBottom: "16px",
-          background: themeToken.colorBgLayout,
+          background: themeToken.colorBgContainer,
           borderRadius: "8px",
           border: `1px solid ${themeToken.colorBorderSecondary}`,
         }}
@@ -161,6 +173,16 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
         loading={loading}
         pagination={{ pageSize: 10 }}
         locale={{ emptyText: "No matching payment records found" }}
+      />
+
+      {/* PayHere Official Receipt Modal */}
+      <PayHereReceiptModal
+        visible={receiptModalVisible}
+        onClose={() => {
+          setReceiptModalVisible(false);
+          setSelectedFeeForReceipt(null);
+        }}
+        fee={selectedFeeForReceipt}
       />
     </div>
   );
