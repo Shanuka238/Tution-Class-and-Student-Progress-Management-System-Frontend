@@ -110,7 +110,9 @@ const UserModal = ({ visible, onCancel, onSuccess, editingUser }) => {
       onOk={() => form.submit()}
       confirmLoading={submitting}
       destroyOnClose={false}
-      width={600}
+      width={620}
+      centered
+      bodyStyle={{ maxHeight: "calc(85vh - 110px)", overflowY: "auto", paddingRight: "8px" }}
     >
       <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ role: "student" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>

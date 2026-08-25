@@ -1,10 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table, Tag, Button, Space, Popconfirm, theme } from "antd";
 import { CheckCircleOutlined, FilePdfOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
+import PayHereReceiptModal from "../PaymentManagement/PayHereReceiptModal";
 
 const FeeTable = ({ fees, loading, onMarkCashPaid }) => {
   const { token: themeToken } = theme.useToken();
+  const [receiptModalVisible, setReceiptModalVisible] = useState(false);
+  const [selectedFeeForReceipt, setSelectedFeeForReceipt] = useState(null);
+
+  const handleOpenReceipt = (feeRecord) => {
+    setSelectedFeeForReceipt(feeRecord);
+    setReceiptModalVisible(true);
+  };
 
   const columns = [
     {
@@ -29,30 +37,31 @@ const FeeTable = ({ fees, loading, onMarkCashPaid }) => {
       key: "class",
       render: (_, record) => (
         <div>
-          <div style={{ color: themeToken.colorText }}>{record.class_id?.class_name}</div>
+          <div style={{ color: themeToken.colorText, fontWeight: 500 }}>{record.class_id?.class_name}</div>
           <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
-            Grade {record.class_id?.grade}
+            Grade {record.class_id?.grade} · {record.class_id?.subject}
           </div>
         </div>
       )
     },
     {
-      title: "Month",
+      title: "Billing Month",
       dataIndex: "month",
-      key: "month"
+      key: "month",
+      render: (m) => <span style={{ fontWeight: 500 }}>{m}</span>
     },
     {
       title: "Amount",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => <strong>LKR {amount.toLocaleString()}</strong>
+      render: (amount) => <strong>LKR {(amount || 0).toLocaleString()}</strong>
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
       render: (status) => {
-        if (status === "paid") return <Tag color="success">Paid</Tag>;
+        if (status === "paid") return <Tag color="success">Paid ✓</Tag>;
         if (status === "unpaid") return <Tag color="processing">Unpaid</Tag>;
         return <Tag color="error">Overdue</Tag>;
       }
@@ -82,11 +91,12 @@ const FeeTable = ({ fees, loading, onMarkCashPaid }) => {
             </Popconfirm>
           ) : (
             <Button
-              type="link"
-              icon={<FilePdfOutlined />}
-              onClick={() => window.open(record.receipt_url, "_blank")}
+              type="default"
+              size="small"
+              icon={<FilePdfOutlined style={{ color: "#7c3aed" }} />}
+              onClick={() => handleOpenReceipt(record)}
             >
-              Receipt
+              View Receipt
             </Button>
           )}
         </Space>
@@ -95,13 +105,24 @@ const FeeTable = ({ fees, loading, onMarkCashPaid }) => {
   ];
 
   return (
-    <Table
-      dataSource={fees}
-      columns={columns}
-      rowKey={(record) => record.fee_id || record._id}
-      loading={loading}
-      pagination={{ pageSize: 10 }}
-    />
+    <>
+      <Table
+        dataSource={fees}
+        columns={columns}
+        rowKey={(record) => record.fee_id || record._id}
+        loading={loading}
+        pagination={{ pageSize: 10 }}
+      />
+
+      <PayHereReceiptModal
+        visible={receiptModalVisible}
+        onClose={() => {
+          setReceiptModalVisible(false);
+          setSelectedFeeForReceipt(null);
+        }}
+        fee={selectedFeeForReceipt}
+      />
+    </>
   );
 };
 
