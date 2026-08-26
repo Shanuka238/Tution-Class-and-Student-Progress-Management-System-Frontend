@@ -1,6 +1,8 @@
 import { API_URLS } from "./apiUrls.js";
+import { APP_CONFIG } from "../config/env.js";
 
-const API_BASE = import.meta.env.VITE_API_URL;
+const API_BASE = APP_CONFIG.API_BASE_URL;
+
 
 const getToken = () => localStorage.getItem("edutracker_token");
 
