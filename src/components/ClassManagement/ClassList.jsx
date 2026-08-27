@@ -342,8 +342,10 @@ const ClassList = () => {
         >
           <div>
             <Text strong style={{ fontSize: "14px", color: themeToken.colorText }}>
-              👥 Enrolled Students Roster ({students.length} / {record.max_students || 30})
+              <TeamOutlined style={{ marginRight: "6px" }} />
+              Enrolled Students Roster ({students.length} / {record.max_students || 30})
             </Text>
+
             <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
               Class: {record.class_name} • Grade {record.grade}
             </div>

@@ -1,6 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { Table, Tag, Button, Space, Input, Select, Card, Row, Col, theme } from "antd";
-import { CreditCardOutlined, FilePdfOutlined, SearchOutlined, ReloadOutlined } from "@ant-design/icons";
+import { 
+  CreditCardOutlined, 
+  FilePdfOutlined, 
+  SearchOutlined, 
+  ReloadOutlined, 
+  CheckCircleOutlined 
+} from "@ant-design/icons";
 import { formatDate } from "../../utils/dateUtils";
 import PayHereReceiptModal from "./PayHereReceiptModal";
 
@@ -86,7 +92,7 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
       dataIndex: "status",
       key: "status",
       render: (status) => {
-        if (status === "paid") return <Tag color="success">Paid ✓</Tag>;
+        if (status === "paid") return <Tag color="success" icon={<CheckCircleOutlined />}>Paid</Tag>;
         if (status === "unpaid") return <Tag color="processing">Unpaid</Tag>;
         return <Tag color="error">Overdue</Tag>;
       },

@@ -29,17 +29,32 @@ const FeeManagement = () => {
     setLoading(true);
     try {
       const classRes = await classAPI.getActiveClasses();
-      setClasses(classRes.data || classRes);
+      const classList = classRes.data || classRes || [];
+      setClasses(Array.isArray(classList) ? classList : []);
 
       const statsRes = await feeAPI.getFinancialStats(
         selectedClassFilter ? { class_id: selectedClassFilter } : {}
       );
-      setStats(statsRes.data || statsRes);
+      const rawStats = statsRes.data || statsRes || {};
 
       const feesRes = await feeAPI.getAllFees(
         selectedClassFilter ? { class_id: selectedClassFilter } : {}
       );
-      setFees(feesRes.data || feesRes);
+      const feeList = feesRes.data || feesRes || [];
+      setFees(Array.isArray(feeList) ? feeList : []);
+
+      // Calculate stats directly from fees array if backend keys are missing or 0
+      const paidList = Array.isArray(feeList) ? feeList.filter(f => f.status === "paid") : [];
+      const unpaidList = Array.isArray(feeList) ? feeList.filter(f => f.status === "unpaid") : [];
+      const overdueList = Array.isArray(feeList) ? feeList.filter(f => f.status === "overdue") : [];
+
+      setStats({
+        totalRevenue: rawStats.totalRevenue ?? paidList.reduce((sum, f) => sum + (Number(f.amount) || 0), 0),
+        pendingAmount: rawStats.pendingAmount ?? [...unpaidList, ...overdueList].reduce((sum, f) => sum + (Number(f.amount) || 0), 0),
+        paidCount: rawStats.paidCount ?? rawStats.paidInvoicesCount ?? paidList.length,
+        unpaidCount: rawStats.unpaidCount !== undefined ? rawStats.unpaidCount : unpaidList.length,
+        overdueCount: rawStats.overdueCount ?? rawStats.overdueInvoicesCount ?? overdueList.length,
+      });
     } catch (err) {
       console.error("Error loading fee management:", err);
       message.error("Failed to load fees directory and metrics");
@@ -47,6 +62,7 @@ const FeeManagement = () => {
       setLoading(false);
     }
   }, [selectedClassFilter]);
+
 
   useEffect(() => {
     fetchInitialData();

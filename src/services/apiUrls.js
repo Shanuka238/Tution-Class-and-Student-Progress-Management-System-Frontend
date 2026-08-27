@@ -5,6 +5,7 @@ export const API_URLS = {
     ME: "/auth/me",
     UPDATE_PROFILE: "/auth/profile",
     CHANGE_PASSWORD: "/auth/change-password",
+    RESET_PASSWORD: "/auth/reset-password",
     UPLOAD_PROFILE_IMAGE: "/auth/profile-image",
   },
   ADMIN: {

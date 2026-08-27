@@ -13,6 +13,7 @@ import {
   Input,
   Row,
   Col,
+  Popconfirm,
 } from "antd";
 import {
   PlusOutlined,
@@ -21,10 +22,14 @@ import {
   ReloadOutlined,
   BookOutlined,
   CalendarOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ClockCircleOutlined,
 } from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import { examAPI } from "../../services/examApi";
 import CreateExamModal from "./CreateExamModal";
+import EditExamModal from "./EditExamModal";
 import ResultManager from "./ResultManager";
 import { formatDate } from "../../utils/dateUtils";
 import dayjs from "dayjs";
@@ -38,6 +43,7 @@ const ExamManagement = () => {
   const [exams, setExams] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editingExam, setEditingExam] = useState(null);
   const [managingExam, setManagingExam] = useState(null);
 
   // Filters
@@ -49,6 +55,17 @@ const ExamManagement = () => {
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
   const canCreate = user.role === "admin" || user.role === "teacher";
+
+  const handleDeleteExam = async (examId) => {
+    try {
+      await examAPI.deleteExam(examId);
+      message.success("Exam and associated results deleted successfully");
+      fetchAllExams();
+    } catch (error) {
+      message.error(error.message || "Failed to delete exam");
+    }
+  };
+
 
   const fetchClasses = useCallback(async () => {
     try {
@@ -185,14 +202,22 @@ const ExamManagement = () => {
       },
     },
     {
-      title: "Exam Date",
+      title: "Exam Date & Time",
       dataIndex: "exam_date",
       key: "exam_date",
-      render: (date) => (
-        <Space>
-          <CalendarOutlined style={{ color: "#4F46E5" }} />
-          <span>{formatDate(date)}</span>
-        </Space>
+      render: (date, record) => (
+        <div>
+          <Space size="small">
+            <CalendarOutlined style={{ color: "#4F46E5" }} />
+            <span style={{ fontWeight: 500 }}>{formatDate(date)}</span>
+          </Space>
+          {(record.start_time || record.end_time) && (
+            <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary, marginTop: "2px" }}>
+              <ClockCircleOutlined style={{ marginRight: "4px" }} />
+              {record.start_time || "09:00"} - {record.end_time || "11:00"}
+            </div>
+          )}
+        </div>
       ),
     },
     {
@@ -207,26 +232,60 @@ const ExamManagement = () => {
       render: (_, record) => {
         const classId = record.class_id?._id || record.class_id?.id || record.class_id;
         const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (record.class_id && typeof record.class_id === "object" ? record.class_id : null);
+        const examId = record.exam_id || record._id;
 
         return (
-          <Button
-            type="primary"
-            size="small"
-            icon={<FileTextOutlined />}
-            style={{ background: "#4F46E5" }}
-            onClick={() => {
-              if (!classObj?.enrolled_students || classObj.enrolled_students.length === 0) {
-                message.warning("No enrolled students found in this class yet. Enroll students to record exam marks.");
-                return;
-              }
-              setManagingExam(record);
-            }}
-          >
-            Manage Results
-          </Button>
+          <Space size="small">
+            <Button
+              type="primary"
+              size="small"
+              icon={<FileTextOutlined />}
+              style={{ background: "#4F46E5" }}
+              onClick={() => {
+                if (!classObj?.enrolled_students || classObj.enrolled_students.length === 0) {
+                  message.warning("No enrolled students found in this class yet. Enroll students to record exam marks.");
+                  return;
+                }
+                setManagingExam(record);
+              }}
+            >
+              Results
+            </Button>
+
+            {canCreate && (
+              <>
+                <Button
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => setEditingExam(record)}
+                  title="Edit Exam Schedule (Name, Date, Time)"
+                >
+                  Edit
+                </Button>
+
+                <Popconfirm
+                  title="Delete Examination"
+                  description="Are you sure you want to delete this exam? All student marks for this exam will also be permanently deleted."
+                  onConfirm={() => handleDeleteExam(examId)}
+                  okText="Yes, Delete"
+                  cancelText="Cancel"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Button
+                    size="small"
+                    danger
+                    type="text"
+                    icon={<DeleteOutlined />}
+                    title="Delete Exam"
+                  />
+                </Popconfirm>
+              </>
+            )}
+          </Space>
         );
       },
     },
+
   ];
 
   const hasActiveFilters =
@@ -390,6 +449,18 @@ const ExamManagement = () => {
         classId={selectedClass}
         classes={classes}
       />
+
+      {/* Modal for Editing Exam Schedule (Name, Date, Time) */}
+      <EditExamModal
+        visible={!!editingExam}
+        exam={editingExam}
+        onCancel={() => setEditingExam(null)}
+        onSuccess={() => {
+          setEditingExam(null);
+          fetchAllExams();
+        }}
+      />
+
 
       {/* Drawer for Managing Results */}
       <Drawer

@@ -29,8 +29,9 @@ const TeacherWelcomeBanner = ({ user }) => {
       >
         <div>
           <Title level={2} style={{ margin: "0 0 4px 0" }}>
-            Welcome back, {user?.first_name || "Educator"}! 👨‍🏫
+            Welcome back, {user?.first_name || "Educator"}!
           </Title>
+
           <Text type="secondary" style={{ fontSize: "15px" }}>
             Here is your active teaching schedule, class student counts, and session metrics.
           </Text>

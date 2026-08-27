@@ -74,7 +74,7 @@ const ChildFeeStandingCard = ({
               <WarningOutlined />
               <span>
                 {hasOverdue
-                  ? `Payment Overdue Warning ⚠️ (${overdueFees.length} invoice${overdueFees.length > 1 ? "s" : ""})`
+                  ? `Payment Overdue Warning (${overdueFees.length} invoice${overdueFees.length > 1 ? "s" : ""})`
                   : `Unpaid Fee Invoice (${unpaidFees.length})`}
               </span>
             </div>

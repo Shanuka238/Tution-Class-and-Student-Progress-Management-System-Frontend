@@ -29,8 +29,9 @@ const StudentWelcomeBanner = ({ user }) => {
       >
         <div>
           <Title level={2} style={{ margin: "0 0 4px 0" }}>
-            Welcome back, {user?.first_name || "Student"}! 👋
+            Welcome back, {user?.first_name || "Student"}!
           </Title>
+
           <Text type="secondary" style={{ fontSize: "15px" }}>
             Here is your active learning schedule, attendance metrics, and fee summary for today.
           </Text>

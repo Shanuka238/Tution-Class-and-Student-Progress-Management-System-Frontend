@@ -1,4 +1,13 @@
 import { useEffect, useRef } from "react";
+import {
+  BookOutlined,
+  TrophyOutlined,
+  EditOutlined,
+  BarChartOutlined,
+  LineChartOutlined,
+  RobotOutlined,
+  CreditCardOutlined,
+} from "@ant-design/icons";
 
 function LoginLeftPanel() {
   const leftPanelRef = useRef(null);
@@ -31,10 +40,18 @@ function LoginLeftPanel() {
       <div className="parallax-shape shape-5"></div>
 
       {/* Floating icons */}
-      <div className="floating-icon icon-1">📚</div>
-      <div className="floating-icon icon-2">🎓</div>
-      <div className="floating-icon icon-3">✏️</div>
-      <div className="floating-icon icon-4">📊</div>
+      <div className="floating-icon icon-1">
+        <BookOutlined />
+      </div>
+      <div className="floating-icon icon-2">
+        <TrophyOutlined />
+      </div>
+      <div className="floating-icon icon-3">
+        <EditOutlined />
+      </div>
+      <div className="floating-icon icon-4">
+        <BarChartOutlined />
+      </div>
 
       {/* Content */}
       <div className="login-left-content">
@@ -59,21 +76,27 @@ function LoginLeftPanel() {
         {/* Features */}
         <div className="feature-list">
           <div className="feature-item">
-            <div className="feature-icon">📈</div>
+            <div className="feature-icon" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <LineChartOutlined style={{ fontSize: "20px" }} />
+            </div>
             <div className="feature-text">
               <h4>Real-time Progress</h4>
               <p>Track student performance instantly</p>
             </div>
           </div>
           <div className="feature-item">
-            <div className="feature-icon">🤖</div>
+            <div className="feature-icon" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <RobotOutlined style={{ fontSize: "20px" }} />
+            </div>
             <div className="feature-text">
               <h4>AI Assistant</h4>
               <p>Powered by Google Gemini</p>
             </div>
           </div>
           <div className="feature-item">
-            <div className="feature-icon">💳</div>
+            <div className="feature-icon" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <CreditCardOutlined style={{ fontSize: "20px" }} />
+            </div>
             <div className="feature-text">
               <h4>Secure Payments</h4>
               <p>Pay tuition fees online safely</p>
@@ -84,5 +107,6 @@ function LoginLeftPanel() {
     </div>
   );
 }
+
 
 export default LoginLeftPanel;
