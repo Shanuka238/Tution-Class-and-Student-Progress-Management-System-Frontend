@@ -3,11 +3,8 @@ import { Card, Typography, Row, Col, Tag, Spin, Space, Progress, theme } from "a
 import {
   TeamOutlined,
   BookOutlined,
-  CheckSquareOutlined,
   DollarOutlined,
-  FileTextOutlined,
   CalendarOutlined,
-  RiseOutlined,
   UserSwitchOutlined,
 } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
@@ -18,8 +15,7 @@ import { examAPI } from "../../services/examApi";
 import StatCard from "../Common/StatCard";
 import dayjs from "dayjs";
 import { getRoleColor } from "../../utils/roleHelper";
-import AdminRevenueChart from "./AdminRevenueChart";
-import AdminEnrollmentAttendanceChart from "./AdminEnrollmentAttendanceChart";
+import AdminTodaySessionsCard from "./AdminTodaySessionsCard";
 
 const { Title, Text } = Typography;
 
@@ -32,15 +28,18 @@ function AdminDashboardOverview() {
   const [classList, setClassList] = useState([]);
   const [feesData, setFeesData] = useState([]);
   const [examsList, setExamsList] = useState([]);
+  const [todaySessions, setTodaySessions] = useState([]);
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
 
   const loadAdminMetrics = useCallback(async () => {
     setLoading(true);
     try {
-      const [usersRes, classesRes, feesRes, examsRes] = await Promise.allSettled([
+      const [usersRes, classesRes, feesRes, examsRes, timetableRes] = await Promise.allSettled([
         adminAPI.getAllUsers(),
         classAPI.getActiveClasses(),
         feeAPI.getAllFees(),
         examAPI.getMyResults ? examAPI.getMyResults() : Promise.resolve([]),
+        classAPI.getTimetable(),
       ]);
 
       const uData = usersRes.status === "fulfilled" ? usersRes.value.data || usersRes.value : [];
@@ -54,6 +53,30 @@ function AdminDashboardOverview() {
 
       const eData = examsRes.status === "fulfilled" ? examsRes.value.data || examsRes.value : [];
       setExamsList(Array.isArray(eData) ? eData : []);
+
+      // Timetable & Live Sessions
+      const ttData = timetableRes.status === "fulfilled" ? timetableRes.value.data || timetableRes.value : [];
+      const sessionsArr = Array.isArray(ttData) ? ttData : [];
+
+      const todayStr = dayjs().format("YYYY-MM-DD");
+      const todayList = [];
+      const upcomingList = [];
+
+      sessionsArr.forEach((s) => {
+        const sessionDate = s.date ? dayjs(s.date).format("YYYY-MM-DD") : null;
+        if (sessionDate === todayStr) {
+          todayList.push(s);
+        } else if (s.date && dayjs(s.date).isAfter(dayjs(), "day")) {
+          upcomingList.push(s);
+        }
+      });
+
+      // Sort today's sessions by start time
+      todayList.sort((a, b) => (a.start_time || "").localeCompare(b.start_time || ""));
+      upcomingList.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+
+      setTodaySessions(todayList);
+      setUpcomingSessions(upcomingList.slice(0, 5));
     } catch (err) {
       console.error("Error loading admin dashboard metrics:", err);
     } finally {
@@ -124,8 +147,9 @@ function AdminDashboardOverview() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
           <div>
             <Title level={2} style={{ margin: "0 0 4px 0" }}>
-              Welcome back, {user?.first_name || "Administrator"}! ⚡
+              Welcome back, {user?.first_name || "Administrator"}!
             </Title>
+
             <Text type="secondary" style={{ fontSize: "15px" }}>
               System-wide operational overview, user accounts, active classes, and financial metrics.
             </Text>
@@ -143,104 +167,109 @@ function AdminDashboardOverview() {
         ))}
       </div>
 
-      {/* Main Grid */}
+      {/* Today's Live Sessions */}
+      <AdminTodaySessionsCard
+        todaySessions={todaySessions}
+        upcomingSessions={upcomingSessions}
+        loading={loading}
+      />
+
+      {/* Main Grid: Tuition Classes & User Role Breakdown */}
       <Row gutter={[20, 20]}>
-        {/* Left Column: Active Classes Overview & System Activity */}
+        {/* Left Column: Active Classes Overview */}
         <Col xs={24} lg={15}>
-          <Space direction="vertical" size="large" style={{ width: "100%" }}>
-            <Card
-              title={
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <BookOutlined style={{ color: "#10B981" }} />
-                  <span>Tuition Classes Overview ({classList.length})</span>
-                </div>
-              }
-              bordered={false}
-              style={{
-                borderRadius: "14px",
-                border: `1px solid ${themeToken.colorBorderSecondary}`,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-              }}
-            >
-              {loading ? (
-                <div style={{ textAlign: "center", padding: "30px" }}>
-                  <Spin size="medium" />
-                </div>
-              ) : classList.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {classList.slice(0, 5).map((item) => (
-                    <div
-                      key={item._id}
-                      style={{
-                        padding: "14px 16px",
-                        borderRadius: "10px",
-                        background: themeToken.colorBgLayout,
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: "600", fontSize: "15px" }}>
-                          {item.class_name}
-                        </div>
-                        <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
-                          Subject: {item.subject} • Grade {item.grade}
-                        </div>
+          <Card
+            title={
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <BookOutlined style={{ color: "#10B981" }} />
+                <span>Tuition Classes Overview ({classList.length})</span>
+              </div>
+            }
+            bordered={false}
+            style={{
+              borderRadius: "14px",
+              border: `1px solid ${themeToken.colorBorderSecondary}`,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              height: "100%",
+            }}
+          >
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "30px" }}>
+                <Spin size="medium" />
+              </div>
+            ) : classList.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {classList.slice(0, 5).map((item) => (
+                  <div
+                    key={item._id}
+                    style={{
+                      padding: "14px 16px",
+                      borderRadius: "10px",
+                      background: themeToken.colorBgLayout,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: "600", fontSize: "15px" }}>
+                        {item.class_name}
                       </div>
-                      <Tag color="purple">Max Capacity: {item.max_students}</Tag>
+                      <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
+                        Subject: {item.subject} • Grade {item.grade}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <Text type="secondary">No active tuition classes configured in the system.</Text>
-              )}
-            </Card>
-          </Space>
+                    <Tag color="purple">Max Capacity: {item.max_students}</Tag>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <Text type="secondary">No active tuition classes configured in the system.</Text>
+            )}
+          </Card>
         </Col>
 
         {/* Right Column: User Role Breakdown */}
         <Col xs={24} lg={9}>
-          <Space direction="vertical" size="large" style={{ width: "100%" }}>
-            <Card
-              title={
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <TeamOutlined style={{ color: "#4F46E5" }} />
-                  <span>User Role Breakdown</span>
-                </div>
-              }
-              bordered={false}
-              style={{
-                borderRadius: "14px",
-                border: `1px solid ${themeToken.colorBorderSecondary}`,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
-              }}
-            >
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                {[
-                  { role: "student", label: "Students", count: studentCount },
-                  { role: "teacher", label: "Teachers / Educators", count: teacherCount },
-                  { role: "parent", label: "Parents / Guardians", count: parentCount },
-                  { role: "admin", label: "Administrators", count: adminCount },
-                ].map((item) => {
-                  const pct = totalUsers > 0 ? Math.round((item.count / totalUsers) * 100) : 0;
-                  return (
-                    <div key={item.role}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                        <span>
-                          <Tag color={getRoleColor(item.role)}>{item.label}</Tag>
-                        </span>
-                        <span style={{ fontWeight: "bold" }}>
-                          {item.count} ({pct}%)
-                        </span>
-                      </div>
-                      <Progress percent={pct} showInfo={false} strokeColor={themeToken.colorPrimary} size="small" />
-                    </div>
-                  );
-                })}
+          <Card
+            title={
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <TeamOutlined style={{ color: "#4F46E5" }} />
+                <span>User Role Breakdown</span>
               </div>
-            </Card>
-          </Space>
+            }
+            bordered={false}
+            style={{
+              borderRadius: "14px",
+              border: `1px solid ${themeToken.colorBorderSecondary}`,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+              height: "100%",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {[
+                { role: "student", label: "Students", count: studentCount },
+                { role: "teacher", label: "Teachers / Educators", count: teacherCount },
+                { role: "parent", label: "Parents / Guardians", count: parentCount },
+                { role: "admin", label: "Administrators", count: adminCount },
+              ].map((item) => {
+                const pct = totalUsers > 0 ? Math.round((item.count / totalUsers) * 100) : 0;
+                return (
+                  <div key={item.role}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                      <span>
+                        <Tag color={getRoleColor(item.role)}>{item.label}</Tag>
+                      </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        {item.count} ({pct}%)
+                      </span>
+                    </div>
+                    <Progress percent={pct} showInfo={false} strokeColor={themeToken.colorPrimary} size="small" />
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
         </Col>
       </Row>
     </div>
@@ -248,3 +277,6 @@ function AdminDashboardOverview() {
 }
 
 export default AdminDashboardOverview;
+
+
+

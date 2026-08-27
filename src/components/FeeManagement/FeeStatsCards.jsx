@@ -1,8 +1,14 @@
 import React from "react";
 import { Row, Col, Card, Statistic, theme } from "antd";
 
-const FeeStatsCards = ({ stats }) => {
+const FeeStatsCards = ({ stats = {} }) => {
   const { token: themeToken } = theme.useToken();
+
+  const totalRevenue = stats?.totalRevenue ?? 0;
+  const pendingAmount = stats?.pendingAmount ?? 0;
+  const paidCount = stats?.paidCount ?? stats?.paidInvoicesCount ?? 0;
+  const unpaidCount = stats?.unpaidCount ?? 0;
+  const overdueCount = stats?.overdueCount ?? stats?.overdueInvoicesCount ?? 0;
 
   return (
     <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
@@ -10,7 +16,7 @@ const FeeStatsCards = ({ stats }) => {
         <Card bordered={false} style={{ borderRadius: "12px", background: "rgba(22, 163, 74, 0.08)", border: "1px solid rgba(22, 163, 74, 0.15)" }}>
           <Statistic
             title={<span style={{ color: themeToken.colorTextDescription }}>Total Collections (Paid)</span>}
-            value={stats.totalRevenue}
+            value={totalRevenue}
             prefix="LKR "
             valueStyle={{ color: "#16a34a", fontWeight: "bold" }}
           />
@@ -20,7 +26,7 @@ const FeeStatsCards = ({ stats }) => {
         <Card bordered={false} style={{ borderRadius: "12px", background: "rgba(37, 99, 235, 0.08)", border: "1px solid rgba(37, 99, 235, 0.15)" }}>
           <Statistic
             title={<span style={{ color: themeToken.colorTextDescription }}>Outstanding Collections</span>}
-            value={stats.pendingAmount}
+            value={pendingAmount}
             prefix="LKR "
             valueStyle={{ color: "#2563eb", fontWeight: "bold" }}
           />
@@ -30,7 +36,7 @@ const FeeStatsCards = ({ stats }) => {
         <Card bordered={false} style={{ borderRadius: "12px", background: themeToken.colorBgContainer, border: `1px solid ${themeToken.colorBorderSecondary}` }}>
           <Statistic
             title={<span style={{ color: themeToken.colorTextDescription }}>Paid Invoices</span>}
-            value={stats.paidCount}
+            value={paidCount}
             valueStyle={{ color: themeToken.colorText, fontWeight: "bold" }}
           />
         </Card>
@@ -39,7 +45,7 @@ const FeeStatsCards = ({ stats }) => {
         <Card bordered={false} style={{ borderRadius: "12px", background: themeToken.colorBgContainer, border: `1px solid ${themeToken.colorBorderSecondary}` }}>
           <Statistic
             title={<span style={{ color: themeToken.colorTextDescription }}>Unpaid Invoices</span>}
-            value={stats.unpaidCount}
+            value={unpaidCount}
             valueStyle={{ color: themeToken.colorText, fontWeight: "bold" }}
           />
         </Card>
@@ -48,7 +54,7 @@ const FeeStatsCards = ({ stats }) => {
         <Card bordered={false} style={{ borderRadius: "12px", background: "rgba(220, 38, 38, 0.08)", border: "1px solid rgba(220, 38, 38, 0.15)" }}>
           <Statistic
             title={<span style={{ color: themeToken.colorTextDescription }}>Overdue Invoices</span>}
-            value={stats.overdueCount}
+            value={overdueCount}
             valueStyle={{ color: "#dc2626", fontWeight: "bold" }}
           />
         </Card>
@@ -56,5 +62,6 @@ const FeeStatsCards = ({ stats }) => {
     </Row>
   );
 };
+
 
 export default FeeStatsCards;

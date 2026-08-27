@@ -18,7 +18,16 @@ export const examAPI = {
     return await apiRequest(`${API_URLS.EXAMS}/${examId}`);
   },
 
+  updateExam: async (examId, updateData) => {
+    return await apiRequest(`${API_URLS.EXAMS}/${examId}`, { method: "PUT", body: updateData });
+  },
+
+  deleteExam: async (examId) => {
+    return await apiRequest(`${API_URLS.EXAMS}/${examId}`, { method: "DELETE" });
+  },
+
   submitBulkResults: async (examId, resultsData) => {
+
     return await apiRequest(`${API_URLS.EXAMS}/${examId}/results`, { method: "POST", body: { results: resultsData } });
   },
 

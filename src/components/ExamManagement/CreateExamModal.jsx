@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, InputNumber, DatePicker, Select, Button, Tag, message } from "antd";
+import { Modal, Form, Input, InputNumber, DatePicker, TimePicker, Select, Button, Tag, Row, Col, message } from "antd";
 import { BookOutlined } from "@ant-design/icons";
 import { examAPI } from "../../services/examApi";
 import dayjs from "dayjs";
@@ -24,13 +24,20 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
 
   useEffect(() => {
     if (visible) {
+      const initialValues = {
+        term: "Term 1",
+        total_marks: 100,
+        start_time: dayjs("09:00", "HH:mm"),
+        end_time: dayjs("11:00", "HH:mm"),
+      };
       if (hasPreselectedClass) {
-        form.setFieldsValue({ class_id: classId });
+        initialValues.class_id = classId;
       } else if (isTeacher && classes.length > 0) {
-        form.setFieldsValue({ class_id: classes[0].class_id || classes[0]._id });
-      } else {
-        form.resetFields();
+        initialValues.class_id = classes[0].class_id || classes[0]._id;
       }
+      form.setFieldsValue(initialValues);
+    } else {
+      form.resetFields();
     }
   }, [visible, classId, hasPreselectedClass, isTeacher, classes, form]);
 
@@ -52,6 +59,8 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
         class_id: targetClassId,
         exam_title: values.exam_title,
         exam_date: values.exam_date.format("YYYY-MM-DD"),
+        start_time: values.start_time ? values.start_time.format("HH:mm") : "09:00",
+        end_time: values.end_time ? values.end_time.format("HH:mm") : "11:00",
         term: values.term,
         total_marks: values.total_marks,
       };
@@ -60,6 +69,7 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
       message.success("Exam scheduled successfully!");
       form.resetFields();
       onSuccess();
+
     } catch (error) {
       if (error.errorFields) {
         return;
@@ -158,6 +168,37 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
           />
         </Form.Item>
 
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              label="Start Time"
+              name="start_time"
+              rules={[{ required: true, message: "Please select start time" }]}
+            >
+              <TimePicker
+                format="HH:mm"
+                minuteStep={15}
+                style={{ width: "100%" }}
+                placeholder="09:00"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="End Time"
+              name="end_time"
+              rules={[{ required: true, message: "Please select end time" }]}
+            >
+              <TimePicker
+                format="HH:mm"
+                minuteStep={15}
+                style={{ width: "100%" }}
+                placeholder="11:00"
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+
         <Form.Item
           name="total_marks"
           label="Total Marks"
@@ -166,6 +207,7 @@ const CreateExamModal = ({ visible, onCancel, onSuccess, classId, classes = [] }
         >
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
+
       </Form>
     </Modal>
   );

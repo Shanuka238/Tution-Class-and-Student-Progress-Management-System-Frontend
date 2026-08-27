@@ -212,6 +212,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
       title: "Date & Day",
       dataIndex: "date",
       key: "date",
+      width: 140,
       sorter: (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
       render: (date) => (
         <div>
@@ -223,6 +224,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
     {
       title: "Time Slot",
       key: "time",
+      width: 140,
       render: (_, record) => (
         <Tag color="cyan" style={{ fontWeight: 500, margin: 0 }}>
           {record.start_time || "—"} - {record.end_time || "—"}
@@ -233,11 +235,13 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
       title: "Room / Venue",
       dataIndex: "venue",
       key: "venue",
+      width: 120,
       render: (venue) => <Tag color="blue">{venue || "Default Hall"}</Tag>,
     },
     {
       title: "Assigned Educator",
       key: "teacher",
+      width: 150,
       render: (_, record) => {
         const teacherUser = record.teacher_id?.user_id;
         return teacherUser ? (
@@ -251,29 +255,34 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
     },
     {
       title: "Session Status",
-      key: "status",
+      key: "session_status",
+      width: 110,
       render: (_, record) => {
-        const isMarked = markedMap[record._id];
         const statusColors = { scheduled: "blue", held: "green", cancelled: "red" };
         const st = getComputedStatus(record);
-
-        return (
-          <Space size="small">
-            <Tag color={statusColors[st] || "blue"}>{st.toUpperCase()}</Tag>
-            {isMarked ? (
-              <Tag color="success">Marked ✓</Tag>
-            ) : (
-              <Tag color="default">Not Marked</Tag>
-            )}
-          </Space>
+        return <Tag color={statusColors[st] || "blue"}>{st.toUpperCase()}</Tag>;
+      },
+    },
+    {
+      title: "Attendance",
+      key: "attendance_status",
+      width: 110,
+      render: (_, record) => {
+        const isMarked = markedMap[record._id];
+        return isMarked ? (
+          <Tag color="success" icon={<CheckCircleOutlined />}>
+            Marked
+          </Tag>
+        ) : (
+          <Tag color="default">Not Marked</Tag>
         );
       },
     },
     {
       title: "Actions",
       key: "actions",
-      fixed: "right",
-      width: 200,
+      width: onMarkAttendance ? 160 : 70,
+      align: "center",
       render: (_, record) => {
         const isMarked = markedMap[record._id];
         return (
@@ -285,7 +294,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
                 icon={<CheckCircleOutlined />}
                 onClick={() => onMarkAttendance(record, isMarked)}
               >
-                {isMarked ? "Edit Attendance" : "Mark Attendance"}
+                {isMarked ? "Edit" : "Mark"}
               </Button>
             )}
             {canManage && (
@@ -319,7 +328,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
           <Tag color="geekblue">{course?.subject || "Course"}</Tag>
         </div>
       }
-      width={920}
+      width={1000}
       onClose={onClose}
       open={visible}
       destroyOnClose
@@ -389,7 +398,7 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
               onChange={(val) => setMarkedFilter(val)}
             >
               <Option value="all">All Attendance</Option>
-              <Option value="marked">Marked ✓</Option>
+              <Option value="marked">Marked</Option>
               <Option value="unmarked">Not Marked</Option>
             </Select>
           </Col>
@@ -474,8 +483,9 @@ const SessionList = ({ visible, onClose, course, onMarkAttendance, hideManagemen
         rowKey="_id"
         loading={loading}
         pagination={{ pageSize: 8, showSizeChanger: true, pageSizeOptions: ["8", "15", "30"] }}
-        scroll={{ x: "max-content" }}
+        scroll={{ x: 860 }}
         locale={{ emptyText: "No class sessions match the selected filters" }}
+
       />
 
       <SessionModal

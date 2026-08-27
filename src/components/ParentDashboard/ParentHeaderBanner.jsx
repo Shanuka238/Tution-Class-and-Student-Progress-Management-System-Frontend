@@ -38,8 +38,9 @@ const ParentHeaderBanner = ({
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <Title level={2} style={{ margin: 0 }}>
-              Welcome, {user?.first_name || "Parent"}! 👋
+              Welcome, {user?.first_name || "Parent"}!
             </Title>
+
             {selectedChild && growthBadge && (
               <Tag
                 color={growthBadge.color}

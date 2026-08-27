@@ -61,7 +61,7 @@ const FeeTable = ({ fees, loading, onMarkCashPaid }) => {
       dataIndex: "status",
       key: "status",
       render: (status) => {
-        if (status === "paid") return <Tag color="success">Paid ✓</Tag>;
+        if (status === "paid") return <Tag color="success" icon={<CheckCircleOutlined />}>Paid</Tag>;
         if (status === "unpaid") return <Tag color="processing">Unpaid</Tag>;
         return <Tag color="error">Overdue</Tag>;
       }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Form, Input, Button, DatePicker, Select, Space, Divider, Typography } from "antd";
-import { ArrowLeftOutlined, UserOutlined, BookOutlined, SolutionOutlined, HomeOutlined } from "@ant-design/icons";
+import { Form, Input, Button, DatePicker, Select, Divider, Typography, Row, Col } from "antd";
+import { ArrowLeftOutlined, BookOutlined, SolutionOutlined, HomeOutlined } from "@ant-design/icons";
 import { authAPI } from "../../services/api";
 import { formatPhoneForBackend, cleanPhoneForInput } from "../../utils/phoneHelper";
 import { toast } from "../../utils/toast.jsx";
@@ -117,25 +117,30 @@ function ProfileEditView({ user, profile, onBack, onProfileUpdated }) {
         onFinish={handleSubmit}
         requiredMark={false}
       >
-        <Space direction="horizontal" style={{ width: "100%" }} size="middle">
-          <Form.Item
-            name="first_name"
-            label="First Name"
-            rules={[{ required: true, message: "Required" }]}
-            style={{ width: "calc(50% - 8px)", marginBottom: 12 }}
-          >
-            <Input placeholder="First Name" />
-          </Form.Item>
+        <Row gutter={12}>
+          <Col span={12}>
+            <Form.Item
+              name="first_name"
+              label="First Name"
+              rules={[{ required: true, message: "Please enter first name" }]}
+              style={{ marginBottom: 12 }}
+            >
+              <Input placeholder="First Name" />
+            </Form.Item>
+          </Col>
 
-          <Form.Item
-            name="last_name"
-            label="Last Name"
-            rules={[{ required: true, message: "Required" }]}
-            style={{ width: "calc(50% - 8px)", marginBottom: 12 }}
-          >
-            <Input placeholder="Last Name" />
-          </Form.Item>
-        </Space>
+          <Col span={12}>
+            <Form.Item
+              name="last_name"
+              label="Last Name"
+              rules={[{ required: true, message: "Please enter last name" }]}
+              style={{ marginBottom: 12 }}
+            >
+              <Input placeholder="Last Name" />
+            </Form.Item>
+          </Col>
+        </Row>
+
 
         <Form.Item
           name="phone"

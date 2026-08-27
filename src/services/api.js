@@ -134,6 +134,15 @@ export const authAPI = {
     });
   },
 
+  async resetPassword({ email, newPassword }) {
+    return await apiRequest(API_URLS.AUTH.RESET_PASSWORD, {
+      method: "POST",
+      body: { email, newPassword },
+      requireAuth: false,
+    });
+  },
+
+
   logout() {
     removeToken();
   },

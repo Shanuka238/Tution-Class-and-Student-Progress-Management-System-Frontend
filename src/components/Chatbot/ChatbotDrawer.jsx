@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Drawer, Segmented, theme } from "antd";
-import { CloseOutlined } from "@ant-design/icons";
+import { CloseOutlined, MessageOutlined, HistoryOutlined } from "@ant-design/icons";
 import { useAuth } from "../../context/AuthContext";
 import { chatbotAPI } from "../../services/chatbotApi";
 import ChatbotHeader from "./ChatbotHeader";
@@ -42,11 +42,11 @@ const ChatbotDrawer = ({ open, onClose }) => {
     try {
       setLoading(true);
       const res = await chatbotAPI.getHistory();
-      const rawLogs = Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : [];
-      if (rawLogs.length > 0) {
-        setRawHistoryLogs(rawLogs);
+      const logs = res.data || res || [];
+      if (Array.isArray(logs) && logs.length > 0) {
+        setRawHistoryLogs(logs);
         const formatted = [];
-        rawLogs.forEach((log) => {
+        logs.forEach((log) => {
           formatted.push({ sender: "user", text: log.question });
           formatted.push({ sender: "bot", text: log.response });
         });
@@ -56,7 +56,7 @@ const ChatbotDrawer = ({ open, onClose }) => {
         setMessages([
           {
             sender: "bot",
-            text: `👋 Hello **${user?.first_name || "there"}**! I am your **EduManage 360 AI Assistant**.\n\nAsk me any natural language question about students, attendance, exam results, or tuition fees!`,
+            text: `Hello **${user?.first_name || "there"}**! I am your **EduManage 360 AI Assistant**.\n\nAsk me any natural language question about students, attendance, exam results, or tuition fees!`,
           },
         ]);
       }
@@ -65,7 +65,7 @@ const ChatbotDrawer = ({ open, onClose }) => {
       setMessages([
         {
           sender: "bot",
-          text: `👋 Hello **${user?.first_name || "there"}**! I am your **EduManage 360 AI Assistant**.\n\nAsk me any question about your data!`,
+          text: `Hello **${user?.first_name || "there"}**! I am your **EduManage 360 AI Assistant**.\n\nAsk me any question about your data!`,
         },
       ]);
     } finally {
@@ -98,7 +98,7 @@ const ChatbotDrawer = ({ open, onClose }) => {
         ...prev,
         {
           sender: "bot",
-          text: "⚠️ Sorry, I encountered an issue retrieving data. Please try again in a moment.",
+          text: "Sorry, I encountered an issue retrieving data. Please try again in a moment.",
         },
       ]);
     } finally {
@@ -152,8 +152,8 @@ const ChatbotDrawer = ({ open, onClose }) => {
           value={activeTab}
           onChange={(val) => setActiveTab(val)}
           options={[
-            { label: "💬 Active Chat", value: "chat" },
-            { label: `📜 History Logs (${rawHistoryLogs.length})`, value: "history" },
+            { label: "Active Chat", value: "chat", icon: <MessageOutlined /> },
+            { label: `History Logs (${rawHistoryLogs.length})`, value: "history", icon: <HistoryOutlined /> },
           ]}
         />
       </div>

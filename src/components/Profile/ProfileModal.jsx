@@ -92,7 +92,7 @@ function ProfileModal({ visible, onCancel }) {
       open={visible}
       onCancel={handleClose}
       footer={null}
-      width={activeView === "edit" ? 420 : 360}
+      width={activeView === "edit" ? 450 : 380}
       centered
       className="profile-modal"
       styles={{ body: { padding: 0 } }}

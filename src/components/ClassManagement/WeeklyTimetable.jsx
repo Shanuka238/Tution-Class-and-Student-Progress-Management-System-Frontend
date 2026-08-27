@@ -1,6 +1,17 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { Card, Tag, Empty, message, theme, Spin, Row, Col, Button, Space, Segmented, Input, Select } from "antd";
-import { ClockCircleOutlined, UserOutlined, EnvironmentOutlined, BookOutlined, LeftOutlined, RightOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  ClockCircleOutlined,
+  UserOutlined,
+  EnvironmentOutlined,
+  BookOutlined,
+  LeftOutlined,
+  RightOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  CheckCircleOutlined,
+  WarningOutlined,
+} from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import { DAYS_OF_WEEK } from "../../enums/dateTime";
 import dayjs from "dayjs";
@@ -28,10 +39,10 @@ const WeeklyTimetable = () => {
   const loadAllCourses = useCallback(async () => {
     try {
       const res = await classAPI.getActiveClasses();
-      const data = res.data || res;
-      setAllCourses(Array.isArray(data) ? data : []);
-    } catch (e) {
-      console.error("Error loading course catalog:", e);
+      const courseList = res.data?.classes || res.data || res.classes || [];
+      setAllCourses(Array.isArray(courseList) ? courseList : []);
+    } catch {
+      // Non-blocking
     }
   }, []);
 
@@ -41,7 +52,7 @@ const WeeklyTimetable = () => {
       const { weekStart, weekEnd } = getWeekDates();
       const startStr = weekStart.format("YYYY-MM-DD");
       const endStr = weekEnd.format("YYYY-MM-DD");
-      
+
       const response = await classAPI.getTimetable(startStr, endStr);
 
       let classesData = [];
@@ -64,6 +75,7 @@ const WeeklyTimetable = () => {
       setLoading(false);
     }
   }, [getWeekDates]);
+
 
   useEffect(() => {
     loadAllCourses();
@@ -293,11 +305,18 @@ const WeeklyTimetable = () => {
 
           <div style={{ fontSize: "13px", color: themeToken.colorTextSecondary }}>
             {hasClassesThisWeek ? (
-              <span>✓ Classes found for this week • Total: {classes.length} session(s)</span>
+              <span>
+                <CheckCircleOutlined style={{ color: "#10B981", marginRight: "6px" }} />
+                Classes found for this week • Total: {classes.length} session(s)
+              </span>
             ) : (
-              <span style={{ color: themeToken.colorWarning }}>⚠ No classes scheduled for this week</span>
+              <span style={{ color: themeToken.colorWarning }}>
+                <WarningOutlined style={{ color: themeToken.colorWarning, marginRight: "6px" }} />
+                No classes scheduled for this week
+              </span>
             )}
           </div>
+
         </Space>
       </div>
 
