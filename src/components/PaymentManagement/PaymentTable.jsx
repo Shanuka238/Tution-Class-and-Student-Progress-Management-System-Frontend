@@ -89,12 +89,12 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
     },
     {
       title: "Status",
-      dataIndex: "status",
       key: "status",
-      render: (status) => {
-        if (status === "paid") return <Tag color="success" icon={<CheckCircleOutlined />}>Paid</Tag>;
-        if (status === "unpaid") return <Tag color="processing">Unpaid</Tag>;
-        return <Tag color="error">Overdue</Tag>;
+      render: (_, record) => {
+        const isOverdue = record.status === "overdue" || (record.status === "unpaid" && record.due_date && dayjs(record.due_date).isBefore(dayjs().startOf("day")));
+        if (record.status === "paid") return <Tag color="success" icon={<CheckCircleOutlined />}>Paid</Tag>;
+        if (isOverdue) return <Tag color="error">Overdue</Tag>;
+        return <Tag color="processing">Unpaid</Tag>;
       },
     },
     {

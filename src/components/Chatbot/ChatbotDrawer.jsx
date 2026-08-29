@@ -123,6 +123,8 @@ const ChatbotDrawer = ({ open, onClose }) => {
 
   if (!user) return null;
 
+  const isMobile = window.innerWidth <= 500;
+
   return (
     <Drawer
       title={
@@ -133,7 +135,7 @@ const ChatbotDrawer = ({ open, onClose }) => {
         />
       }
       placement="right"
-      width={430}
+      width={isMobile ? "100%" : 430}
       onClose={onClose}
       open={open}
       closeIcon={<CloseOutlined />}

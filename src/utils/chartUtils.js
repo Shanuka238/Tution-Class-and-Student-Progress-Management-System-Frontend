@@ -52,14 +52,25 @@ export const aggregateEnrollmentByGrade = (classList = []) => {
 
   classList.forEach((cls) => {
     const g = `Grade ${cls.grade || "Other"}`;
-    if (!gradeMap[g]) gradeMap[g] = 0;
-    gradeMap[g] += cls.max_students || 30; 
+    if (!gradeMap[g]) {
+      gradeMap[g] = { enrolled: 0, capacity: 0 };
+    }
+    const enrolledCount = Array.isArray(cls.enrolled_students) ? cls.enrolled_students.length : 0;
+    gradeMap[g].enrolled += enrolledCount;
+    gradeMap[g].capacity += cls.max_students || 30;
   });
 
-  return Object.keys(gradeMap).map((grade) => ({
-    grade,
-    students: gradeMap[grade],
-  }));
+  return Object.keys(gradeMap)
+    .sort((a, b) => {
+      const numA = parseInt(a.replace(/\D/g, ""), 10) || 0;
+      const numB = parseInt(b.replace(/\D/g, ""), 10) || 0;
+      return numA - numB;
+    })
+    .map((grade) => ({
+      grade,
+      students: gradeMap[grade].enrolled,
+      capacity: gradeMap[grade].capacity,
+    }));
 };
 
 export const aggregateMonthlyAttendanceTrend = (attendanceLogs = []) => {

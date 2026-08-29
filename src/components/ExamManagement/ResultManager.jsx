@@ -1,17 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { Card, Table, Button, InputNumber, Space, Typography, message, Tag } from "antd";
-import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, Table, Button, InputNumber, Space, Typography, message, Tag, Input, Select, Row, Col, theme } from "antd";
+import { ArrowLeftOutlined, SaveOutlined, SearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { classAPI } from "../../services/classApi";
 import { examAPI } from "../../services/examApi";
 
 const { Title, Text } = Typography;
+const { Option } = Select;
 
 const ResultManager = ({ exam, onBack, isDrawer = false, enrolledStudents = [] }) => {
+  const { token: themeToken } = theme.useToken();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [marks, setMarks] = useState({});
   const [resultsMap, setResultsMap] = useState({});
+
+  // Filter states
+  const [searchText, setSearchText] = useState("");
+  const [gradeFilter, setGradeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all"); // all, graded, ungraded
 
   const enrolledStudentsLength = enrolledStudents ? enrolledStudents.length : 0;
 
@@ -99,6 +106,45 @@ const ResultManager = ({ exam, onBack, isDrawer = false, enrolledStudents = [] }
     }
   };
 
+  const filteredStudents = useMemo(() => {
+    return students.filter(student => {
+      const sId = student.student_id || student.id || student._id;
+      const res = resultsMap[sId];
+      const studentName = student.name || `${student.user_id?.first_name || ""} ${student.user_id?.last_name || ""}`.trim();
+      const studentNumber = student.student_number || "";
+
+      // 1. Search Query
+      if (searchText.trim()) {
+        const q = searchText.toLowerCase().trim();
+        const matchName = studentName.toLowerCase().includes(q);
+        const matchNumber = studentNumber.toLowerCase().includes(q);
+        if (!matchName && !matchNumber) return false;
+      }
+
+      // 2. Grade Filter
+      if (gradeFilter !== "all") {
+        if (!res || res.grade !== gradeFilter) return false;
+      }
+
+      // 3. Status Filter (Graded vs Ungraded)
+      if (statusFilter === "graded") {
+        if (marks[sId] === undefined || marks[sId] === null) return false;
+      } else if (statusFilter === "ungraded") {
+        if (marks[sId] !== undefined && marks[sId] !== null) return false;
+      }
+
+      return true;
+    });
+  }, [students, searchText, gradeFilter, statusFilter, resultsMap, marks]);
+
+  const hasActiveFilters = searchText || gradeFilter !== "all" || statusFilter !== "all";
+
+  const resetFilters = () => {
+    setSearchText("");
+    setGradeFilter("all");
+    setStatusFilter("all");
+  };
+
   const columns = [
     {
       title: "Student Name",
@@ -158,10 +204,11 @@ const ResultManager = ({ exam, onBack, isDrawer = false, enrolledStudents = [] }
 
   const content = (
     <>
-      <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Space>
+      <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+        <Space wrap>
           <Tag color="blue">Term: {exam.term}</Tag>
           <Tag color="purple">Total Marks: {exam.total_marks}</Tag>
+          <Tag color="cyan">Total Students: {students.length}</Tag>
         </Space>
         
         <Button 
@@ -174,12 +221,78 @@ const ResultManager = ({ exam, onBack, isDrawer = false, enrolledStudents = [] }
         </Button>
       </div>
 
+      {/* Advanced Result Filter Toolbar */}
+      <Card
+        size="small"
+        style={{
+          marginBottom: "16px",
+          background: themeToken.colorBgLayout,
+          borderRadius: "8px",
+          border: `1px solid ${themeToken.colorBorderSecondary}`,
+        }}
+      >
+        <Row gutter={[10, 10]} align="middle">
+          {/* Search by student name or ID */}
+          <Col xs={24} sm={10} md={10}>
+            <Input
+              prefix={<SearchOutlined style={{ color: "#9CA3AF" }} />}
+              placeholder="Search by student name or STU ID..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+            />
+          </Col>
+
+          {/* Grade Filter */}
+          <Col xs={12} sm={6} md={6}>
+            <Select
+              style={{ width: "100%" }}
+              value={gradeFilter}
+              onChange={(val) => setGradeFilter(val)}
+            >
+              <Option value="all">All Grades</Option>
+              <Option value="A">Grade A</Option>
+              <Option value="B">Grade B</Option>
+              <Option value="C">Grade C</Option>
+              <Option value="S">Grade S</Option>
+              <Option value="F">Grade F</Option>
+            </Select>
+          </Col>
+
+          {/* Status Filter */}
+          <Col xs={12} sm={5} md={5}>
+            <Select
+              style={{ width: "100%" }}
+              value={statusFilter}
+              onChange={(val) => setStatusFilter(val)}
+            >
+              <Option value="all">All Statuses</Option>
+              <Option value="graded">Graded Only</Option>
+              <Option value="ungraded">Ungraded Only</Option>
+            </Select>
+          </Col>
+
+          {/* Reset Filters */}
+          <Col xs={24} sm={3} md={3} style={{ textAlign: "right" }}>
+            {hasActiveFilters && (
+              <Button icon={<ReloadOutlined />} onClick={resetFilters} type="text" danger>
+                Reset
+              </Button>
+            )}
+          </Col>
+        </Row>
+      </Card>
+
       <Table 
         columns={columns} 
-        dataSource={students} 
+        dataSource={filteredStudents} 
         rowKey={(record) => record.student_id || record.id || record._id} 
         loading={loading}
-        pagination={false}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} students`,
+        }}
       />
     </>
   );
