@@ -133,9 +133,15 @@ const ExamManagement = () => {
         }
       }
 
-      // 4. Status Filter (Upcoming vs Past)
+      // 4. Status Filter (Upcoming vs Conducted)
       if (selectedStatus !== "all") {
-        const isUpcoming = exam.exam_date ? dayjs(exam.exam_date).isAfter(dayjs().startOf("day")) : false;
+        let isUpcoming = true;
+        if (exam.exam_date) {
+          const examDateStr = dayjs(exam.exam_date).format("YYYY-MM-DD");
+          const endTimeStr = exam.end_time || "23:59";
+          const examEndDateTime = dayjs(`${examDateStr} ${endTimeStr}`);
+          isUpcoming = examEndDateTime.isValid() ? examEndDateTime.isAfter(dayjs()) : dayjs(exam.exam_date).isAfter(dayjs());
+        }
         if (selectedStatus === "upcoming" && !isUpcoming) return false;
         if (selectedStatus === "conducted" && isUpcoming) return false;
       }
@@ -161,7 +167,13 @@ const ExamManagement = () => {
       title: "Exam Details",
       key: "exam_title",
       render: (_, record) => {
-        const isUpcoming = record.exam_date ? dayjs(record.exam_date).isAfter(dayjs().startOf("day")) : false;
+        let isUpcoming = true;
+        if (record.exam_date) {
+          const examDateStr = dayjs(record.exam_date).format("YYYY-MM-DD");
+          const endTimeStr = record.end_time || "23:59";
+          const examEndDateTime = dayjs(`${examDateStr} ${endTimeStr}`);
+          isUpcoming = examEndDateTime.isValid() ? examEndDateTime.isAfter(dayjs()) : dayjs(record.exam_date).isAfter(dayjs());
+        }
         return (
           <div>
             <div style={{ fontWeight: 600, fontSize: "14px" }}>
@@ -172,7 +184,7 @@ const ExamManagement = () => {
               {isUpcoming ? (
                 <Tag color="cyan">Upcoming</Tag>
               ) : (
-                <Tag color="default">Conducted</Tag>
+                <Tag color="green">Conducted</Tag>
               )}
             </div>
           </div>

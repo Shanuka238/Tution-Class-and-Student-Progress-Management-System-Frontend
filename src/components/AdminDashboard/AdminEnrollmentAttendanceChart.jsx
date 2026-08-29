@@ -7,6 +7,7 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip as RechartsTooltip,
+  Legend,
   ResponsiveContainer,
   LineChart,
   Line,
@@ -22,7 +23,7 @@ const AdminEnrollmentAttendanceChart = ({ classList = [], attendanceLogs = [] })
     <Row gutter={[20, 20]}>
       <Col xs={24} lg={12}>
         <Card
-          title="Student Capacity per Grade"
+          title="Student Enrollment & Capacity per Grade"
           bordered={false}
           style={{
             borderRadius: "14px",
@@ -36,21 +37,34 @@ const AdminEnrollmentAttendanceChart = ({ classList = [], attendanceLogs = [] })
                 <BarChart data={enrollmentData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={themeToken.colorBorderSecondary} />
                   <XAxis dataKey="grade" stroke={themeToken.colorTextSecondary} fontSize={12} />
-                  <YAxis stroke={themeToken.colorTextSecondary} fontSize={12} />
+                  <YAxis stroke={themeToken.colorTextSecondary} fontSize={12} allowDecimals={false} />
                   <RechartsTooltip
                     contentStyle={{
                       backgroundColor: themeToken.colorBgContainer,
                       borderColor: themeToken.colorBorderSecondary,
                       borderRadius: "8px",
                     }}
-                    formatter={(val) => [`${val} Students`, "Capacity"]}
+                    formatter={(val, name) => [
+                      `${val} Students`,
+                      name === "students" ? "Enrolled Students" : "Max Capacity",
+                    ]}
                   />
-                  <Bar dataKey="students" fill="#8B5CF6" radius={[6, 6, 0, 0]} />
+                  <Legend 
+                    verticalAlign="top" 
+                    align="right"
+                    formatter={(value) => (
+                      <span style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
+                        {value === "students" ? "Enrolled" : "Capacity"}
+                      </span>
+                    )}
+                  />
+                  <Bar dataKey="students" name="students" fill="#8B5CF6" radius={[4, 4, 0, 0]} barSize={16} />
+                  <Bar dataKey="capacity" name="capacity" fill="#DDD6FE" radius={[4, 4, 0, 0]} barSize={16} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
               <div style={{ textAlign: "center", paddingTop: "90px", color: themeToken.colorTextSecondary }}>
-                No active grade capacity data recorded.
+                No active grade enrollment data recorded.
               </div>
             )}
           </div>

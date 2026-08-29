@@ -113,6 +113,7 @@ input {
   transform: translateX(-50%) !important;
   margin-left: 0 !important;
   top: 10px !important;
+  max-width: 90vw !important;
 }
 
 .ant-notification-notice {
@@ -121,4 +122,26 @@ input {
   padding: 0 !important;
   margin-bottom: 10px !important;
   border-radius: 22px !important;
+}
+
+/* Global Mobile Responsiveness Utilities */
+@media (max-width: 768px) {
+  html, body {
+    font-size: 14px;
+  }
+
+  /* Prevent overflow on mobile screens */
+  .ant-layout {
+    overflow-x: hidden !important;
+  }
+
+  /* Responsive dropdown menus */
+  .ant-dropdown {
+    max-width: 90vw !important;
+  }
+
+  /* Touch optimizations */
+  button, input, select, textarea {
+    touch-action: manipulation;
+  }
 }

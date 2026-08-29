@@ -58,28 +58,39 @@ function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
       <AntHeader
         style={{
           background: themeToken.colorBgContainer,
-          padding: "0 24px",
+          padding: "0 16px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           borderBottom: "1px solid " + themeToken.colorBorderSecondary,
+          height: 64,
+          lineHeight: "64px",
         }}
       >
         {/* Left: collapse toggle + title */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
           <Button
             type="text"
             icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             onClick={onCollapseToggle}
-            style={{ fontSize: 16, width: 40, height: 40 }}
+            style={{ fontSize: 18, width: 40, height: 40 }}
           />
-          <Title level={4} style={{ margin: 0 }}>
+          <Title 
+            level={4} 
+            style={{ 
+              margin: 0, 
+              whiteSpace: "nowrap", 
+              overflow: "hidden", 
+              textOverflow: "ellipsis",
+              fontSize: "clamp(15px, 4vw, 18px)"
+            }}
+          >
             {currentLabel}
           </Title>
         </div>
 
         {/* Right: notifications + theme toggle + user */}
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <NotificationDropdown />
 
           <Button

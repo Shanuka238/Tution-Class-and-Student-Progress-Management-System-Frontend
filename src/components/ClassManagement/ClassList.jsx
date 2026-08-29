@@ -38,6 +38,7 @@ const { Option } = Select;
 const ClassList = () => {
   const { token: themeToken } = theme.useToken();
   const [classes, setClasses] = useState([]);
+  const [teacherSessions, setTeacherSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -47,12 +48,14 @@ const ClassList = () => {
   const [droppingStudentId, setDroppingStudentId] = useState(null);
 
   // Filters
+  const [selectedCourseId, setSelectedCourseId] = useState("all");
   const [searchText, setSearchText] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("all");
   const [selectedGrade, setSelectedGrade] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("all");
 
   const user = JSON.parse(localStorage.getItem("edutracker_user") || "{}");
+  const isTeacher = user.role === "teacher";
   const canManage = user.role === "admin";
   const canEnroll = user.role === "admin";
 
@@ -60,14 +63,41 @@ const ClassList = () => {
     setLoading(true);
     try {
       const response = await classAPI.getActiveClasses();
-      setClasses(response.data || response || []);
+      const loadedClasses = response.data || response || [];
+      setClasses(loadedClasses);
+
+      if (isTeacher) {
+        // Fetch all timetable sessions for the teacher across their assigned courses
+        const allSessions = [];
+        for (const cls of loadedClasses) {
+          try {
+            const sessRes = await classAPI.getCourseSessions(cls._id);
+            const sessList = sessRes.data || sessRes || [];
+            if (Array.isArray(sessList)) {
+              sessList.forEach((s) => {
+                allSessions.push({
+                  ...s,
+                  course_name: cls.class_name || cls.subject || "Class",
+                  course_subject: cls.subject,
+                  course_grade: cls.grade,
+                  course_data: cls,
+                });
+              });
+            }
+          } catch {
+            // Non-blocking
+          }
+        }
+        allSessions.sort((a, b) => dayjs(b.date).unix() - dayjs(a.date).unix());
+        setTeacherSessions(allSessions);
+      }
     } catch (error) {
       console.error("Error fetching classes:", error);
       message.error(error.message || "Failed to load class timetable data");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isTeacher]);
 
   useEffect(() => {
     fetchClasses();
@@ -104,6 +134,7 @@ const ClassList = () => {
   };
 
   const resetFilters = () => {
+    setSelectedCourseId("all");
     setSearchText("");
     setSelectedSubject("all");
     setSelectedGrade("all");
@@ -119,7 +150,38 @@ const ClassList = () => {
     return Array.from(set);
   }, [classes]);
 
-  // Filtered dataset
+  // Filtered dataset for Teachers (Sessions Table)
+  const filteredTeacherSessions = useMemo(() => {
+    if (!isTeacher) return [];
+    return teacherSessions.filter((s) => {
+      if (selectedCourseId !== "all") {
+        const cId = String(s.course_id?._id || s.course_id || s.course_data?._id || "");
+        if (cId !== String(selectedCourseId)) return false;
+      }
+      if (selectedSubject !== "all" && s.course_subject !== selectedSubject) {
+        return false;
+      }
+      if (selectedGrade !== "all" && String(s.course_grade) !== String(selectedGrade)) {
+        return false;
+      }
+      if (selectedStatus !== "all") {
+        const sStatus = s.status || "scheduled";
+        if (sStatus !== selectedStatus) return false;
+      }
+      if (searchText.trim()) {
+        const q = searchText.toLowerCase().trim();
+        const courseName = (s.course_name || "").toLowerCase();
+        const subject = (s.course_subject || "").toLowerCase();
+        const venue = (s.venue || "").toLowerCase();
+        if (!courseName.includes(q) && !subject.includes(q) && !venue.includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [isTeacher, teacherSessions, selectedCourseId, selectedSubject, selectedGrade, selectedStatus, searchText]);
+
+  // Filtered dataset for Admins (Classes Table)
   const filteredClasses = useMemo(() => {
     return classes.filter((item) => {
       // 1. Subject Filter
@@ -153,6 +215,71 @@ const ClassList = () => {
       return true;
     });
   }, [classes, searchText, selectedSubject, selectedGrade, selectedStatus]);
+
+  // Columns for Teacher Sessions Table
+  const teacherSessionColumns = [
+    {
+      title: "Course / Class Name",
+      key: "course_name",
+      render: (_, record) => (
+        <div>
+          <div style={{ fontWeight: 600, fontSize: "14px", color: themeToken.colorText }}>
+            {record.course_name}
+          </div>
+          <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
+            {record.course_subject} • Grade {record.course_grade}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Session Date & Day",
+      dataIndex: "date",
+      key: "date",
+      sorter: (a, b) => dayjs(a.date).unix() - dayjs(b.date).unix(),
+      render: (date) => (
+        <div>
+          <div style={{ fontWeight: 600 }}>{dayjs(date).format("MMM DD, YYYY")}</div>
+          <div style={{ fontSize: "12px", color: themeToken.colorTextSecondary }}>
+            {dayjs(date).format("dddd")}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Time Window",
+      key: "time",
+      render: (_, record) => (
+        <Tag color="cyan" style={{ fontWeight: 500, margin: 0 }}>
+          {record.start_time || "—"} - {record.end_time || "—"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Room / Venue",
+      dataIndex: "venue",
+      key: "venue",
+      render: (venue) => <Tag color="blue">{venue || "Default Hall"}</Tag>,
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (_, record) => {
+        let isPast = false;
+        if (record.date) {
+          const dateStr = dayjs(record.date).format("YYYY-MM-DD");
+          const endTime = record.end_time || "23:59";
+          const sessionEnd = dayjs(`${dateStr} ${endTime}`);
+          isPast = sessionEnd.isValid() ? sessionEnd.isBefore(dayjs()) : dayjs(record.date).isBefore(dayjs());
+        }
+        return (
+          <Tag color={isPast ? "green" : "blue"}>
+            {isPast ? "HELD" : "SCHEDULED"}
+          </Tag>
+        );
+      },
+    },
+  ];
 
   const columns = [
     {
@@ -411,10 +538,12 @@ const ClassList = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <div>
           <Title level={3} style={{ margin: 0, color: themeToken.colorText }}>
-            Class Schedule & Timetables
+            {isTeacher ? "Scheduled Class Sessions" : "Class Schedule & Timetables"}
           </Title>
           <Text type="secondary" style={{ fontSize: "13px" }}>
-            Total Classes: {classes.length} | Showing: {filteredClasses.length} records
+            {isTeacher
+              ? `Total Sessions: ${teacherSessions.length} | Showing: ${filteredTeacherSessions.length} records`
+              : `Total Classes: ${classes.length} | Showing: ${filteredClasses.length} records`}
           </Text>
         </div>
         {canManage && (
@@ -440,11 +569,34 @@ const ClassList = () => {
         }}
       >
         <Row gutter={[12, 12]} align="middle">
+          {/* Course Selector for Teachers */}
+          {isTeacher && (
+            <Col xs={24} sm={12} md={7}>
+              <Select
+                style={{ width: "100%" }}
+                value={selectedCourseId}
+                onChange={(val) => setSelectedCourseId(val)}
+                placeholder="Filter by Assigned Course..."
+              >
+                <Option value="all">All Assigned Courses ({classes.length})</Option>
+                {classes.map((cls) => {
+                  const enrolled = cls.enrolled_count ?? (cls.enrolled_students?.length || 0);
+                  const max = cls.max_students || 30;
+                  return (
+                    <Option key={cls._id} value={cls._id}>
+                      {cls.class_name} • {enrolled}/{max} Enrolled
+                    </Option>
+                  );
+                })}
+              </Select>
+            </Col>
+          )}
+
           {/* Search */}
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={12} md={isTeacher ? 5 : 8}>
             <Input
               prefix={<SearchOutlined style={{ color: "#9CA3AF" }} />}
-              placeholder="Search by Class Name, Subject, Grade..."
+              placeholder="Search by Class, Subject, Venue..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
@@ -452,7 +604,7 @@ const ClassList = () => {
           </Col>
 
           {/* Subject Filter */}
-          <Col xs={12} sm={6} md={5}>
+          <Col xs={12} sm={6} md={isTeacher ? 4 : 5}>
             <Select
               style={{ width: "100%" }}
               value={selectedSubject}
@@ -468,7 +620,7 @@ const ClassList = () => {
           </Col>
 
           {/* Grade Filter */}
-          <Col xs={12} sm={6} md={4}>
+          <Col xs={12} sm={6} md={isTeacher ? 3 : 4}>
             <Select
               style={{ width: "100%" }}
               value={selectedGrade}
@@ -484,20 +636,24 @@ const ClassList = () => {
           </Col>
 
           {/* Status Filter */}
-          <Col xs={12} sm={6} md={4}>
+          <Col xs={12} sm={6} md={isTeacher ? 3 : 4}>
             <Select
               style={{ width: "100%" }}
               value={selectedStatus}
               onChange={(val) => setSelectedStatus(val)}
             >
               <Option value="all">All Statuses</Option>
-              <Option value="active">Active Only</Option>
-              <Option value="archived">Archived Only</Option>
+              <Option value={isTeacher ? "scheduled" : "active"}>
+                {isTeacher ? "Scheduled" : "Active"}
+              </Option>
+              <Option value={isTeacher ? "held" : "archived"}>
+                {isTeacher ? "Held" : "Archived"}
+              </Option>
             </Select>
           </Col>
 
           {/* Reset Filters */}
-          <Col xs={12} sm={6} md={3} style={{ textAlign: "right" }}>
+          <Col xs={12} sm={6} md={2} style={{ textAlign: "right" }}>
             {hasActiveFilters && (
               <Button icon={<ReloadOutlined />} onClick={resetFilters} type="text" danger>
                 Reset
@@ -508,14 +664,18 @@ const ClassList = () => {
       </Card>
 
       <Table
-        columns={columns}
-        dataSource={filteredClasses}
-        rowKey="_id"
+        columns={isTeacher ? teacherSessionColumns : columns}
+        dataSource={isTeacher ? filteredTeacherSessions : filteredClasses}
+        rowKey={isTeacher ? (s) => s._id || `${s.date}_${s.start_time}` : "_id"}
         loading={loading}
-        expandable={{
-          expandedRowRender,
-          rowExpandable: () => true,
-        }}
+        expandable={
+          !isTeacher
+            ? {
+                expandedRowRender,
+                rowExpandable: () => true,
+              }
+            : undefined
+        }
       />
 
       <ClassModal

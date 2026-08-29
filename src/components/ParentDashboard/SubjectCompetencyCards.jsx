@@ -93,11 +93,11 @@ const SubjectCompetencyCards = ({
                             Latest Exam Assessment
                           </div>
                           <div style={{ fontWeight: "600", fontSize: "13px" }}>
-                            {latestExam.exam_id?.title || "Class Test"}
+                            {latestExam.exam_id?.exam_title || latestExam.exam_id?.title || "Class Test"}
                           </div>
                         </div>
                         <Tag color={getGradeColor(latestExam.grade)} style={{ fontWeight: "bold" }}>
-                          {latestExam.marks}/100 ({latestExam.grade})
+                          {latestExam.marks_obtained ?? latestExam.marks ?? 0}/{latestExam.exam_id?.total_marks || 100} ({latestExam.grade || "N/A"})
                         </Tag>
                       </div>
                     ) : (

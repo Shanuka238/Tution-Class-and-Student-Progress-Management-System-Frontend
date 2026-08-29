@@ -40,15 +40,6 @@ const ParentHeaderBanner = ({
             <Title level={2} style={{ margin: 0 }}>
               Welcome, {user?.first_name || "Parent"}!
             </Title>
-
-            {selectedChild && growthBadge && (
-              <Tag
-                color={growthBadge.color}
-                style={{ fontSize: "13px", padding: "4px 10px", borderRadius: "6px" }}
-              >
-                {growthBadge.label}
-              </Tag>
-            )}
           </div>
           <Text
             type="secondary"
