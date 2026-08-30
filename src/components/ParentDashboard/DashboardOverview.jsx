@@ -162,30 +162,32 @@ function ParentDashboardOverview({ activeTab = "overview" }) {
     },
     {
       title: "Attendance Rate",
-      value: `${attendancePct}%`,
+      value: attendanceLogs.length > 0 ? `${attendancePct}%` : "—",
       icon: <CheckSquareOutlined />,
-      color: attendancePct >= 80 ? "#10B981" : "#F59E0B",
+      color: attendanceLogs.length > 0 ? (attendancePct >= 80 ? "#10B981" : "#F59E0B") : "#94A3B8",
     },
     {
       title: "Average Exam Score",
-      value: examResults.length > 0 ? `${avgExamScore}%` : "N/A",
+      value: examResults.length > 0 ? `${avgExamScore}%` : "—",
       icon: <TrophyOutlined />,
-      color: "#8B5CF6",
+      color: examResults.length > 0 ? "#8B5CF6" : "#94A3B8",
     },
     {
       title: "Enrolled Subjects",
-      value: enrolledClasses.length.toString(),
+      value: enrolledClasses.length > 0 ? enrolledClasses.length.toString() : "—",
       icon: <BookOutlined />,
       color: "#3B82F6",
     },
     {
       title: "Outstanding Fees",
       value:
-        unpaidFees.length > 0
+        feeInvoices.length === 0
+          ? "—"
+          : unpaidFees.length > 0
           ? `LKR ${totalUnpaidAmount.toLocaleString()}`
           : "Cleared",
       icon: <DollarOutlined />,
-      color: unpaidFees.length > 0 ? "#EF4444" : "#10B981",
+      color: feeInvoices.length === 0 ? "#94A3B8" : unpaidFees.length > 0 ? "#EF4444" : "#10B981",
     },
   ];
 

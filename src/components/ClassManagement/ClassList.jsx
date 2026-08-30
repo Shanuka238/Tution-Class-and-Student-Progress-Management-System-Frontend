@@ -21,6 +21,7 @@ import {
   CalendarOutlined,
   TeamOutlined,
   DeleteOutlined,
+  EditOutlined,
   SearchOutlined,
   ReloadOutlined,
   UserAddOutlined,
@@ -41,11 +42,13 @@ const ClassList = () => {
   const [teacherSessions, setTeacherSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [editingClass, setEditingClass] = useState(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
   const [sessionListVisible, setSessionListVisible] = useState(false);
   const [selectedCourseForSessions, setSelectedCourseForSessions] = useState(null);
   const [droppingStudentId, setDroppingStudentId] = useState(null);
+
 
   // Filters
   const [selectedCourseId, setSelectedCourseId] = useState("all");
@@ -140,6 +143,13 @@ const ClassList = () => {
     setSelectedGrade("all");
     setSelectedStatus("all");
   };
+
+  const hasActiveFilters =
+    selectedCourseId !== "all" ||
+    searchText.trim() !== "" ||
+    selectedSubject !== "all" ||
+    selectedGrade !== "all" ||
+    selectedStatus !== "all";
 
   // Unique subjects list for filter dropdown
   const uniqueSubjects = useMemo(() => {
@@ -370,6 +380,18 @@ const ClassList = () => {
             Sessions
           </Button>
           {canManage && (
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              title="Edit Class Schedule"
+              onClick={() => {
+                setEditingClass(record);
+                setModalVisible(true);
+              }}
+            />
+          )}
+          {canManage && (
             <Popconfirm
               title="Delete Class"
               description={`Are you sure you want to delete "${record.class_name}"?`}
@@ -523,9 +545,6 @@ const ClassList = () => {
     );
   };
 
-  const hasActiveFilters =
-    searchText || selectedSubject !== "all" || selectedGrade !== "all" || selectedStatus !== "all";
-
   return (
     <div
       style={{
@@ -538,7 +557,7 @@ const ClassList = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
         <div>
           <Title level={3} style={{ margin: 0, color: themeToken.colorText }}>
-            {isTeacher ? "Scheduled Class Sessions" : "Class Schedule & Timetables"}
+            {isTeacher ? "Scheduled Class Sessions" : "Class Schedule"}
           </Title>
           <Text type="secondary" style={{ fontSize: "13px" }}>
             {isTeacher
@@ -550,7 +569,10 @@ const ClassList = () => {
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => setModalVisible(true)}
+            onClick={() => {
+              setEditingClass(null);
+              setModalVisible(true);
+            }}
             style={{ background: "#4F46E5" }}
           >
             Schedule New Class
@@ -576,26 +598,22 @@ const ClassList = () => {
                 style={{ width: "100%" }}
                 value={selectedCourseId}
                 onChange={(val) => setSelectedCourseId(val)}
-                placeholder="Filter by Assigned Course..."
+                placeholder="Select Course"
               >
                 <Option value="all">All Assigned Courses ({classes.length})</Option>
-                {classes.map((cls) => {
-                  const enrolled = cls.enrolled_count ?? (cls.enrolled_students?.length || 0);
-                  const max = cls.max_students || 30;
-                  return (
-                    <Option key={cls._id} value={cls._id}>
-                      {cls.class_name} • {enrolled}/{max} Enrolled
-                    </Option>
-                  );
-                })}
+                {classes.map((cls) => (
+                  <Option key={cls._id || cls.id} value={cls._id || cls.id}>
+                    {cls.class_name} ({cls.subject} - Grade {cls.grade})
+                  </Option>
+                ))}
               </Select>
             </Col>
           )}
 
-          {/* Search */}
-          <Col xs={24} sm={12} md={isTeacher ? 5 : 8}>
+          {/* Search Query Filter */}
+          <Col xs={24} sm={12} md={isTeacher ? 7 : 8}>
             <Input
-              prefix={<SearchOutlined style={{ color: "#9CA3AF" }} />}
+              prefix={<SearchOutlined style={{ color: themeToken.colorTextPlaceholder }} />}
               placeholder="Search by Class, Subject, Venue..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -609,6 +627,7 @@ const ClassList = () => {
               style={{ width: "100%" }}
               value={selectedSubject}
               onChange={(val) => setSelectedSubject(val)}
+              placeholder="Select Subject"
             >
               <Option value="all">All Subjects</Option>
               {uniqueSubjects.map((subj) => (
@@ -625,6 +644,7 @@ const ClassList = () => {
               style={{ width: "100%" }}
               value={selectedGrade}
               onChange={(val) => setSelectedGrade(val)}
+              placeholder="Select Grade"
             >
               <Option value="all">All Grades</Option>
               {["6", "7", "8", "9", "10", "11", "12", "13"].map((g) => (
@@ -641,6 +661,7 @@ const ClassList = () => {
               style={{ width: "100%" }}
               value={selectedStatus}
               onChange={(val) => setSelectedStatus(val)}
+              placeholder="Select Status"
             >
               <Option value="all">All Statuses</Option>
               <Option value={isTeacher ? "scheduled" : "active"}>
@@ -680,9 +701,14 @@ const ClassList = () => {
 
       <ClassModal
         visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
+        editingClass={editingClass}
+        onCancel={() => {
+          setModalVisible(false);
+          setEditingClass(null);
+        }}
         onSuccess={() => {
           setModalVisible(false);
+          setEditingClass(null);
           fetchClasses();
         }}
       />

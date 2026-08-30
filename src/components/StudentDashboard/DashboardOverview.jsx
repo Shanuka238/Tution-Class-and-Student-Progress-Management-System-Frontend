@@ -115,7 +115,7 @@ function StudentDashboardOverview() {
   const attendancePct =
     totalAttendance > 0
       ? Math.round(((presentCount + lateCount * 0.5) / totalAttendance) * 100)
-      : 100;
+      : null;
 
   const unpaidFees = feesList.filter((f) => f.status !== "paid");
   const totalUnpaidAmount = unpaidFees.reduce((acc, f) => acc + (f.amount || 0), 0);
@@ -147,30 +147,30 @@ function StudentDashboardOverview() {
       ? Math.round(
           scoredExams.reduce((acc, val) => acc + val, 0) / scoredExams.length
         )
-      : 0;
+      : null;
 
   const statCardsData = [
     {
       title: "Enrolled Classes",
-      value: enrolledClasses.length.toString(),
+      value: enrolledClasses.length > 0 ? enrolledClasses.length.toString() : "—",
       icon: <BookOutlined />,
       color: "#10B981",
     },
     {
       title: "Attendance Rate",
-      value: `${attendancePct}%`,
+      value: totalAttendance > 0 ? `${attendancePct}%` : "—",
       icon: <CheckSquareOutlined />,
-      color: attendancePct >= 80 ? "#10B981" : "#F59E0B",
+      color: totalAttendance > 0 ? (attendancePct >= 80 ? "#10B981" : "#F59E0B") : "#94A3B8",
     },
     {
       title: "Pending Invoices",
-      value: unpaidFees.length > 0 ? `LKR ${totalUnpaidAmount.toLocaleString()}` : "Cleared",
+      value: feesList.length === 0 ? "—" : unpaidFees.length > 0 ? `LKR ${totalUnpaidAmount.toLocaleString()}` : "Cleared",
       icon: <DollarOutlined />,
-      color: unpaidFees.length > 0 ? "#EF4444" : "#10B981",
+      color: feesList.length === 0 ? "#94A3B8" : unpaidFees.length > 0 ? "#EF4444" : "#10B981",
     },
     {
       title: "Exams Completed",
-      value: examResults.length.toString(),
+      value: examResults.length > 0 ? examResults.length.toString() : "—",
       icon: <FileTextOutlined />,
       color: "#3B82F6",
     },
@@ -178,7 +178,7 @@ function StudentDashboardOverview() {
       title: "Average Score",
       value: scoredExams.length > 0 ? `${avgExamScore}%` : "—",
       icon: <TrophyOutlined />,
-      color: "#8B5CF6",
+      color: scoredExams.length > 0 ? "#8B5CF6" : "#94A3B8",
     },
   ];
 

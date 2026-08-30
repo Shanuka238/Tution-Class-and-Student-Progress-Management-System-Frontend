@@ -149,9 +149,9 @@ const StudentAttendance = ({ attendance: propAttendance, loading: propLoading })
           <Card bordered={false} style={{ borderRadius: "12px", background: "rgba(22, 163, 74, 0.1)", border: "1px solid rgba(22, 163, 74, 0.2)" }}>
             <Statistic
               title={<span style={{ color: themeToken.colorTextDescription }}>Attendance Rate</span>}
-              value={attendanceRate}
-              suffix="%"
-              valueStyle={{ color: "#16a34a", fontWeight: "bold" }}
+              value={total > 0 ? attendanceRate : "—"}
+              suffix={total > 0 ? "%" : ""}
+              valueStyle={{ color: total > 0 ? "#16a34a" : themeToken.colorTextDescription, fontWeight: "bold" }}
             />
           </Card>
         </Col>

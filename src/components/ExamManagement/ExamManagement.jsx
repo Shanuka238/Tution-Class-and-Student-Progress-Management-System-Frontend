@@ -267,13 +267,12 @@ const ExamManagement = () => {
             {canCreate && (
               <>
                 <Button
+                  type="text"
                   size="small"
                   icon={<EditOutlined />}
                   onClick={() => setEditingExam(record)}
                   title="Edit Exam Schedule (Name, Date, Time)"
-                >
-                  Edit
-                </Button>
+                />
 
                 <Popconfirm
                   title="Delete Examination"

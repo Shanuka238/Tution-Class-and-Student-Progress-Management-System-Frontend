@@ -4,7 +4,6 @@ import {
   MenuUnfoldOutlined,
   LogoutOutlined,
   UserOutlined,
-  SettingOutlined,
   BellOutlined,
   SunOutlined,
   MoonOutlined,
@@ -39,7 +38,6 @@ function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
   const dropdownItems = {
     items: [
       { key: "profile", icon: <UserOutlined />, label: "Profile", onClick: handleProfileClick },
-      { key: "settings", icon: <SettingOutlined />, label: "Settings" },
       { type: "divider" },
       {
         key: "logout",
@@ -58,7 +56,7 @@ function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
       <AntHeader
         style={{
           background: themeToken.colorBgContainer,
-          padding: "0 16px",
+          padding: "0 24px",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -90,19 +88,35 @@ function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
         </div>
 
         {/* Right: notifications + theme toggle + user */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <NotificationDropdown />
 
           <Button
             type="text"
             icon={isDarkMode ? <SunOutlined /> : <MoonOutlined />}
             onClick={toggleTheme}
-            style={{ fontSize: 18 }}
+            style={{
+              fontSize: 18,
+              width: 38,
+              height: 38,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             title={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
           />
 
+          <div
+            style={{
+              width: "1px",
+              height: "24px",
+              background: themeToken.colorBorderSecondary,
+              margin: "0 4px",
+            }}
+          />
+
           <Dropdown menu={dropdownItems} placement="bottomRight" trigger={["click"]}>
-            <div className="user-trigger">
+            <div className="user-trigger" style={{ padding: "4px 10px", gap: 10 }}>
               <Avatar
                 src={user?.profile_image || undefined}
                 icon={!user?.profile_image ? <UserOutlined /> : undefined}
@@ -110,13 +124,13 @@ function Header({ collapsed, onCollapseToggle, activeNav, navItems }) {
                   backgroundColor: "#4F46E5", 
                   verticalAlign: "middle" 
                 }}
-                size="small"
+                size={34}
               />
-              <div className="user-trigger-info">
-                <Text strong style={{ fontSize: 13 }}>
+              <div className="user-trigger-info" style={{ gap: 2 }}>
+                <Text strong style={{ fontSize: 13, lineHeight: 1.2 }}>
                   {user?.first_name} {user?.last_name}
                 </Text>
-                <Text type="secondary" style={{ fontSize: 11 }}>
+                <Text type="secondary" style={{ fontSize: 11, lineHeight: 1.1 }}>
                   {formatRoleDisplay(user?.role)}
                 </Text>
               </div>
