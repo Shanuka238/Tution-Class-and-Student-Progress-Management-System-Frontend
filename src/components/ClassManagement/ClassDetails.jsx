@@ -102,7 +102,7 @@ const ClassDetails = ({ classId, onBack }) => {
 
   return (
     <Space size="large" style={{ width: "100%" }}>
-      <Button icon={<ArrowLeftOutlined />} onClick={onBack} type="link">Back to Timetables</Button>
+      <Button icon={<ArrowLeftOutlined />} onClick={onBack} type="link">Back to Classes</Button>
 
       {/* Class Profile Meta Information Data Card Box */}
       <Card style={{ borderRadius: "8px", border: "1px solid var(--color-border)", width: "100%" }}>

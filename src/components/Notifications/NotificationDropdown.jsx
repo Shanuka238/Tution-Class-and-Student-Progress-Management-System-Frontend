@@ -252,11 +252,23 @@ const NotificationDropdown = () => {
       }}
       overlayInnerStyle={{ padding: 0 }}
     >
-      <Badge count={unreadCount} overflowCount={99} size="small">
-        <Button type="text" icon={<BellOutlined />} style={{ fontSize: 18 }} />
+      <Badge count={unreadCount} overflowCount={99} size="small" offset={[-4, 4]}>
+        <Button
+          type="text"
+          icon={<BellOutlined />}
+          style={{
+            fontSize: 18,
+            width: 38,
+            height: 38,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        />
       </Badge>
     </Popover>
   );
 };
 
 export default NotificationDropdown;
+

@@ -25,9 +25,17 @@ export const classAPI = {
     });
   },
 
+  async updateClass(classId, classData) {
+    return await apiRequest(`${API_URLS.CLASSES}/${classId}`, {
+      method: "PUT",
+      body: classData,
+    });
+  },
+
   async getClassById(classId) {
     return await apiRequest(`${API_URLS.CLASSES}/${classId}`);
   },
+
 
   async enrollStudent(studentId, classId) {
     return await apiRequest(`${API_URLS.CLASSES}/enroll`, {

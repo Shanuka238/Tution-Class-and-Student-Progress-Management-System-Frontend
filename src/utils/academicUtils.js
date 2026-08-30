@@ -24,7 +24,7 @@ export const calculateGrowthMetrics = (attendanceLogs = [], examResults = [], fe
   const attendancePct =
     totalAttendance > 0
       ? Math.round(((presentCount + lateCount * 0.5) / totalAttendance) * 100)
-      : 100;
+      : null;
 
   const unpaidFees = feeInvoices.filter((f) => f.status !== FEE_STATUS.PAID);
   const totalUnpaidAmount = unpaidFees.reduce((acc, f) => acc + (f.amount || 0), 0);
@@ -55,7 +55,8 @@ export const calculateGrowthMetrics = (attendanceLogs = [], examResults = [], fe
     lateCount,
     absentCount,
     totalAttendance,
-    attendancePct,
+    attendancePct: attendancePct !== null ? attendancePct : 0,
+    hasAttendanceRecords: totalAttendance > 0,
     unpaidFees,
     totalUnpaidAmount,
     avgExamScore,
