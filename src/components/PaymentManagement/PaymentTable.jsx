@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Table, Tag, Button, Space, Input, Select, Card, Row, Col, theme } from "antd";
+import { Table, Tag, Button, Space, Input, Select, Card, Row, Col, DatePicker, theme } from "antd";
 import { 
   CreditCardOutlined, 
   FilePdfOutlined, 
@@ -12,11 +12,13 @@ import PayHereReceiptModal from "./PayHereReceiptModal";
 import dayjs from "dayjs";
 
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const PaymentTable = ({ fees = [], loading, onPay }) => {
   const { token: themeToken } = theme.useToken();
   const [searchText, setSearchText] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("all");
+  const [dateRange, setDateRange] = useState(null);
 
   // Receipt Modal State
   const [receiptModalVisible, setReceiptModalVisible] = useState(false);
@@ -41,13 +43,30 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
         }
       }
 
+      // 3. Date Range Filter
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        const startDate = dayjs(dateRange[0]).startOf("day");
+        const endDate = dayjs(dateRange[1]).endOf("day");
+
+        const dueDate = item.due_date ? dayjs(item.due_date) : null;
+        const paidDate = item.paid_date ? dayjs(item.paid_date) : null;
+
+        const isDueInRange = dueDate && (dueDate.isAfter(startDate) || dueDate.isSame(startDate, "day")) && (dueDate.isBefore(endDate) || dueDate.isSame(endDate, "day"));
+        const isPaidInRange = paidDate && (paidDate.isAfter(startDate) || paidDate.isSame(startDate, "day")) && (paidDate.isBefore(endDate) || paidDate.isSame(endDate, "day"));
+
+        if (!isDueInRange && !isPaidInRange) {
+          return false;
+        }
+      }
+
       return true;
     });
-  }, [fees, searchText, selectedStatus]);
+  }, [fees, searchText, selectedStatus, dateRange]);
 
   const resetFilters = () => {
     setSearchText("");
     setSelectedStatus("all");
+    setDateRange(null);
   };
 
   const handleOpenReceipt = (feeRecord) => {
@@ -127,7 +146,7 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
     },
   ];
 
-  const hasFilters = searchText || selectedStatus !== "all";
+  const hasFilters = Boolean(searchText.trim() || selectedStatus !== "all" || (dateRange && dateRange.length > 0));
 
   return (
     <div>
@@ -142,16 +161,16 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
         }}
       >
         <Row gutter={[10, 10]} align="middle">
-          <Col xs={24} sm={12} md={12}>
+          <Col xs={24} sm={12} md={9}>
             <Input
-              prefix={<SearchOutlined style={{ color: "#9CA3AF" }} />}
+              prefix={<SearchOutlined style={{ color: themeToken.colorTextPlaceholder }} />}
               placeholder="Search invoice by course, subject, or month..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
             />
           </Col>
-          <Col xs={12} sm={8} md={8}>
+          <Col xs={12} sm={6} md={5}>
             <Select
               style={{ width: "100%" }}
               value={selectedStatus}
@@ -163,7 +182,16 @@ const PaymentTable = ({ fees = [], loading, onPay }) => {
               <Option value="overdue">Overdue Warnings</Option>
             </Select>
           </Col>
-          <Col xs={12} sm={4} md={4} style={{ textAlign: "right" }}>
+          <Col xs={12} sm={6} md={7}>
+            <RangePicker
+              style={{ width: "100%" }}
+              value={dateRange}
+              onChange={(dates) => setDateRange(dates)}
+              format="YYYY-MM-DD"
+              placeholder={["Start Date", "End Date"]}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={3} style={{ textAlign: "right" }}>
             {hasFilters && (
               <Button icon={<ReloadOutlined />} onClick={resetFilters} type="text" danger>
                 Reset

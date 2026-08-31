@@ -246,6 +246,15 @@ const ExamManagement = () => {
         const classObj = classes.find((c) => (c._id || c.class_id) === classId) || (record.class_id && typeof record.class_id === "object" ? record.class_id : null);
         const examId = record.exam_id || record._id;
 
+        let isUpcoming = true;
+        if (record.exam_date) {
+          const examDateStr = dayjs(record.exam_date).format("YYYY-MM-DD");
+          const endTimeStr = record.end_time || "23:59";
+          const examEndDateTime = dayjs(`${examDateStr} ${endTimeStr}`);
+          isUpcoming = examEndDateTime.isValid() ? examEndDateTime.isAfter(dayjs()) : dayjs(record.exam_date).isAfter(dayjs());
+        }
+        const isConducted = !isUpcoming;
+
         return (
           <Space size="small">
             <Button
@@ -270,8 +279,9 @@ const ExamManagement = () => {
                   type="text"
                   size="small"
                   icon={<EditOutlined />}
+                  disabled={isConducted}
                   onClick={() => setEditingExam(record)}
-                  title="Edit Exam Schedule (Name, Date, Time)"
+                  title={isConducted ? "Cannot edit a conducted examination" : "Edit Exam Schedule"}
                 />
 
                 <Popconfirm
@@ -281,13 +291,15 @@ const ExamManagement = () => {
                   okText="Yes, Delete"
                   cancelText="Cancel"
                   okButtonProps={{ danger: true }}
+                  disabled={isConducted}
                 >
                   <Button
                     size="small"
-                    danger
+                    danger={!isConducted}
                     type="text"
+                    disabled={isConducted}
                     icon={<DeleteOutlined />}
-                    title="Delete Exam"
+                    title={isConducted ? "Cannot delete a conducted examination" : "Delete Exam"}
                   />
                 </Popconfirm>
               </>
